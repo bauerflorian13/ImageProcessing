@@ -1,12 +1,12 @@
 #
-# Makefile to build the cpp sources
+# Makefile to build and train the model and compile cpp source
 #
 
 CC=g++
 
-EXES=dartboard createsamples trainmodel
+EXES=dartboard createsamples trainmodel face
 
-NUM_OF_IMAGES=500
+NUM_OF_IMAGES=1000
 
 all: $(EXES)
 
