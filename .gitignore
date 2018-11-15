@@ -14,5 +14,5 @@ a.out
 # exclude all model files. Again, build it by your own from sources
 *.xml
 *.dat
-
+*.vec
 
