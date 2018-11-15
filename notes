@@ -1,0 +1,1 @@
+g++ -o face face.cpp `pkg-config opencv --cflags --libs`
