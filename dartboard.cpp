@@ -12,7 +12,6 @@
 #include "opencv2/highgui.hpp" // done
 #include "opencv2/imgproc/imgproc.hpp" //done
 #include <iostream>
-#include <stdio.h>
 #include <string>
 
 using namespace std;
