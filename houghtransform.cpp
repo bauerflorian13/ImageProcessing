@@ -228,7 +228,7 @@ void hough(Mat grad_mag, Mat grad_orient, int threshold, Mat org){
     vector<Vec3f> circles;
 
     /// Apply the Hough Transform to find the circles
-    circles = houghCircleCalculation( grad_mag, grad_mag.rows/8, 0, 0 );
+    circles = houghCircleCalculation( grad_mag, grad_mag.rows/8, 50, 60 );
     /// Draw the circles detected
     cout << circles.size() << endl;
     for( size_t i = 0; i < circles.size(); i++ )
@@ -250,20 +250,33 @@ void hough(Mat grad_mag, Mat grad_orient, int threshold, Mat org){
 }
 
 vector<Vec3f> houghCircleCalculation(Mat input, int minDist, int minRadius, int maxRadius){
+    // some parameters to increase performance
+    int x_step_size = 4;
+    int y_step_size = 4;
+    int theta_step_size = 4;
+    int r_step_size = 2;
+
+    cout << "minDist: " << minDist << endl;
+    cout << "minRadius: " << minRadius << endl;
+    cout << "minRadius: " << maxRadius << endl;
+
     // reimplement this
     // HoughCircles(input, output,CV_HOUGH_GRADIENT, 1, minDist, 200, 100, minRadius, maxRadius);
-    Mat src = Mat(input.size(), CV_8U); //input.clone();
-
-   // imshow( "Hough Circle Transform ZZZ", input );
-    //waitKey(0);
+    
     vector<Vec3f> output;
     cout << "Checkpoint 1" << endl;
     // init houghspace H with 0 everwhere
-    int H[input.cols][input.rows][1];
+    //int H[2][3][4];
+    int H[500][500][60];
+    //int H[input.cols][input.rows][maxRadius];
+    cout << "Checkpoint 1,5" << endl;
+    
+
     for(int i = 0; i < input.cols; i++){
         for(int j = 0; j < input.rows; j++){
-            for(int k = 0; k < 1; k++){
+            for(int k = minRadius; k < maxRadius; k++){
                 H[i][j][k] = 0;
+                //cout << i << " " << j << " " << k << endl;
             }
         }
     }
@@ -274,34 +287,36 @@ vector<Vec3f> houghCircleCalculation(Mat input, int minDist, int minRadius, int 
     int t1 = 200;
     int r = 53;
     int counter = 0;
-    for(int y = 0; y < input.rows-4; y++){
-        for(int x = 0; x < input.cols-4; x++){  
-            uchar pixel = input.at<uchar>(y,x);
-            if(pixel >= t1){
-                //circle(src, Point(x,y), r, Scalar(0,255,0),1,8,0);
-                //counter ++;
-                //cout << "abc " << counter << endl;        
-                for(int theta = 0; theta < 350; theta=theta+4){
-                //int theta = 0;
-                    // calculate the polar coordinates for the center
-                    
-                    int a = x - r * cos(theta * CV_PI / 180);
-                    if(a < 0 || a >= input.cols){
-                        continue;
-                    }
-                    int b = y - r * sin(theta * CV_PI / 180);
-                    if(b < 0 || b >= input.rows){
-                        continue;
-                    }
-                    cout << "x: " << x << endl;
-                    cout << "y: " << y << endl;
+    for(int r = minRadius; r < maxRadius-r_step_size; r=r+r_step_size){
+        for(int y = 0; y < input.rows-y_step_size; y=y+y_step_size){
+            for(int x = 0; x < input.cols-x_step_size; x=x+x_step_size){  
+                uchar pixel = input.at<uchar>(y,x);
+                if(pixel >= t1){
+                    //circle(src, Point(x,y), r, Scalar(0,255,0),1,8,0);
+                    //counter ++;
+                    //cout << "abc " << counter << endl;        
+                    for(int theta = 0; theta < 360-theta_step_size; theta=theta+theta_step_size){
+                    //int theta = 0;
+                        // calculate the polar coordinates for the center
+                        
+                        int a = x - r * cos(theta * CV_PI / 180);
+                        if(a < 0 || a >= input.cols){
+                            continue;
+                        }
+                        int b = y - r * sin(theta * CV_PI / 180);
+                        if(b < 0 || b >= input.rows){
+                            continue;
+                        }
+                        cout << "x: " << x << endl;
+                        cout << "y: " << y << endl;
 
-                   // cout << "input.cols: " << input.cols << endl;
-                   // cout << "input.rows: " << input.rows << endl;
+                    // cout << "input.cols: " << input.cols << endl;
+                    // cout << "input.rows: " << input.rows << endl;
 
-                    // increase voting
-                    H[a][b][r] += 1;
-                    cout << "Increment!" << endl;
+                        // increase voting
+                        H[a][b][r] += 1;
+                        cout << "Increment!" << endl;
+                    }
                 }
             }
         }
@@ -313,10 +328,10 @@ vector<Vec3f> houghCircleCalculation(Mat input, int minDist, int minRadius, int 
    // waitKey(0);
 
     // threshold
-    int t = 20;
+    int t = 4;
     for(int i = 0; i < input.cols; i++){
         for(int j = 0; j < input.rows; j++){
-            for(int k = 53; k <= 53; k++){
+            for(int k = minRadius; k < maxRadius; k++){
                 if (H[i][j][k] > t){
                     // circle detected
                     cout << "Circle detected!" << endl;
