@@ -177,7 +177,7 @@ void hough(Mat grad_mag, Mat grad_orient, int threshold, Mat org){
     Mat src = org;
     vector<Vec3f> circles;
     // Apply the Hough Transform to find the circles
-    circles = houghCircleCalculation( grad_mag, grad_mag.rows/8, 0, 0 );
+    circles = houghCircleCalculation( grad_mag, grad_mag.rows/8, 30, 80 );
 
     // Draw the circles detected
     for( size_t i = 0; i < circles.size(); i++ ) {
@@ -199,56 +199,53 @@ void hough(Mat grad_mag, Mat grad_orient, int threshold, Mat org){
 }
 
 vector<Vec3f> houghCircleCalculation(Mat input, int minDist, int minRadius, int maxRadius){
-    // reimplement this
     vector<Vec3f> output;
+    // reimplement this
     //HoughCircles(input, output, CV_HOUGH_GRADIENT, 1, input.rows/8, 200, 100, 0, 0 );
     //return output;
 
-    // some parameters to increase performance
+    // some parameters to increase performance and other adjustments
+    // IMPORTANT: DO NOT CHANGE ANY OF THESE PARAMS IF YOU DO NOT KNOW EXACTLY WHAT YOU ARE DOING THERE!!!!
     int x_step_size = 1;
     int y_step_size = 1;
     int theta_step_size = 1;
-    int r_step_size = 2;
+    int r_step_size = 1;
 
     int t1 = 200; 
     int r = 53;
-    int t = 150; // this is the threshold for detecting a center of a cricle as a center!
+    int t = 90; // this is the threshold for detecting a center of a cricle as a center!
+        t = t/ (y_step_size * x_step_size * theta_step_size);
     int debug = 0;
 
     cout << "minDist: " << minDist << endl;
     cout << "minRadius: " << minRadius << endl;
     cout << "minRadius: " << maxRadius << endl;
     
-    cout << "Checkpoint 1" << endl;
-    // init houghspace H with 0 everwhere
-    //int H[500][500][60];
-    int H[input.cols][input.rows][1];
-    cout << "Checkpoint 2" << endl;
+    cout << "Checkpoint 01: inited params" << endl;
 
-    for(int i = 0; i < input.cols; i++){
-        for(int j = 0; j < input.rows; j++){
-            //for(int k = minRadius; k < maxRadius; k++){
-            int k = 0;
-            H[i][j][k] = 0;
-            //}
+    // init houghspace H
+    int H[input.cols][input.rows];
+    cout << "Checkpoint 02: inited hough space" << endl;
+
+    for(int r = minRadius; r < maxRadius-r_step_size; r=r+r_step_size){
+        cout << "[DEBUG]: --- Start new Houghspace calculation for Radius '" << r << "' ---" << endl;
+        cout << "[DEBUG]: Start resetting houghspace...";
+        // reset hough space
+        for(int i = 0; i < input.cols; i++){
+            for(int j = 0; j < input.rows; j++){
+                H[i][j] = 0;
+            }
         }
-    }
+        cout << "\tDone!" << endl;
 
-    cout << "Checkpoint 3" << endl;
-    
-    // calculate houghspace
-    //for(int r = minRadius; r < maxRadius-r_step_size; r=r+r_step_size){
+        cout << "[DEBUG]: Start calculating the houghspace...";
+        // calculate houghspace
         for(int y = 0; y < input.rows-y_step_size; y=y+y_step_size){
             for(int x = 0; x < input.cols-x_step_size; x=x+x_step_size){  
                 uchar pixel = input.at<uchar>(y,x);
                 if(pixel >= t1){
-                    //circle(src, Point(x,y), r, Scalar(0,255,0),1,8,0);
-                    //counter ++;
-                    cout << "abc " << endl;        
                     for(int theta = 0; theta < 360-theta_step_size; theta=theta+theta_step_size){
-                    //int theta = 0;
-                        // calculate the polar coordinates for the center
-                        
+                        // calculate the polar coordinates for the center    
                         int a = x - r * cos(theta * CV_PI / 180);
                         if(a < 0 || a >= input.cols){
                             continue;
@@ -263,37 +260,34 @@ vector<Vec3f> houghCircleCalculation(Mat input, int minDist, int minRadius, int 
                             cout << "Increment!" << endl;
                         }
                         // increase voting
-                        H[a][b][r] += 1;
+                        H[a][b] += 1;
                         
                     }
                 }
             }
         }
-    //}
+        cout << "\tDone!" << endl;
 
-    cout << "Checkpoint 4" << endl;
-
-   // imshow( "Abc Transform", src );
-   // waitKey(0);
-
-    // threshold
-    t = t/ (y_step_size * x_step_size * theta_step_size);
-    for(int i = 0; i < input.cols; i++){
-        for(int j = 0; j < input.rows; j++){
-            //for(int k = minRadius; k < maxRadius; k++){
-                int k = 0;
-                if (H[i][j][k] > t){
+        cout << "[DEBUG]: Start detecting the circles...";
+        int max = 0;
+        // look if pixels are abough a certain threshold then they are centers of a circle
+        for(int i = 0; i < input.cols; i++){
+            for(int j = 0; j < input.rows; j++){
+                if (H[i][j] > max){
+                    max = H[i][j];
+                }
+                if (H[i][j] > t){
                     // circle detected
                     cout << "Circle detected!" << endl;
-                    k = 53;
-                    output.push_back(Vec3f(i,j,k));
+                    output.push_back(Vec3f(i,j,r));
                 }
-            //}
+            }
         }
+        cout << "\tDone!" << endl;
+        cout << "[DEBUG]: Max value found in the houghspace was '" << max << "'" << endl;
     }
 
-    cout << "Checkpoint 5" << endl;
-    cout << output.size() << endl;
+    cout << "[DEBUG]: Circle detecting for all radius finished!" << endl;
     return output;
 }
 
