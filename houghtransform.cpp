@@ -94,7 +94,6 @@ String type2str(int type) {
   return r;
 }
 
-
 void sobel(Mat input, Mat sobelX, Mat sobelY, Mat sobelMag, Mat sobelDir){
 
     // deriative in x direction
@@ -125,51 +124,13 @@ void sobel(Mat input, Mat sobelX, Mat sobelY, Mat sobelMag, Mat sobelDir){
 
     convolute(input,sobelY,kernelY);
 
-    //imwrite("sobelY2.jpg", sobelY);
-
-    /*sobelY = Mat(341,441, CV_8U, Scalar(255));
-    for(int r = 0; r < sobelY.rows; r++){
-        for(int c = 0; c < sobelY.cols; c++){
-            sobelY.at<short>(r,c) = 100;
-          }
-        }*/
-    // calculate the magnitude of the gradient
-    // here the approximation of |G| = |G_x| + |G_y| is used instead of |G|=(G_x^2 + G_y^2)^0.5
-  //  printf("cols: %d, rows: %d \n", sobelMag.cols, sobelMag.rows);
-
     for(int y = 0; y < input.rows; y++){
         for(int x = 0; x < input.cols; x++){
-            //printf("gx: %d \n", sobelX.at<int>(x,y));
-            float gx = abs(sobelX.at<float>(y,x));// >= 0 ? sobelX.at<int>(x,y) : 1-sobelX.at<int>(x,y);
-            float gy = abs(sobelY.at<float>(y,x));// >= 0 ? sobelY.at<int>(x,y) : 1-sobelY.at<int>(x,y);
-            //float gy = 0;
-            /*if(gx >= 255){
-              gx = 255;
-            }
-
-            if(gy >= 255){
-              gy = 255;
-            }
-            if(gx < 0){
-              gx = 0;
-            }
-            if(gy < 0){
-              gy = 0;
-            }
-
-            */
+            float gx = abs(sobelX.at<float>(y,x));
+            float gy = abs(sobelY.at<float>(y,x));
             float g = (gx + gy);
-            //printf("x: %d, y: %d \n", x, y);
-            /*if(g > 255 || g < 0){
-              printf("Not supported value: %f \n", g);
-              printf("gx: %f, gy: %f\n", gx,gy);
-            }*/
-            //sobelMag.at<int>(y,x) = (float) g;
-            
             sobelMag.at<float>(y,x) = (float) g;
-
-            // TODO: check if overflow is possible here...
-        }
+       }
     }
     cout << "Type of sobelX: " << type2str(sobelX.type()) << endl;
     cout << "Type of sobelY: " << type2str(sobelY.type()) << endl;
@@ -183,17 +144,8 @@ void sobel(Mat input, Mat sobelX, Mat sobelY, Mat sobelMag, Mat sobelDir){
             float gx = sobelX.at<float>(y,x);
             float gy = sobelY.at<float>(y,x);
             float orient = (float) atan(gy / gx);
-            /*if(orient > 255){
-              orient = 255;
-            }
-            if(orient < 0){
-              orient = 0;
-            }*/
             
-            sobelDir.at<float>(y,x) = orient;// * 180/CV_PI;
-            
-             // TODO: maybe use this  * 180/CV_PI;
-             // TODO: check if overflow or underflow is possible here...
+            sobelDir.at<float>(y,x) = orient;
         }
     }
 
@@ -222,14 +174,14 @@ void thresholdX(Mat input, Mat output, int T){
 
 
 void hough(Mat grad_mag, Mat grad_orient, int threshold, Mat org){
-
-    Mat src = org.clone();//Mat(341,441, CV_8U, Scalar(255));
-
+    // declaration of some variables
+    Mat src = org.clone();
     vector<Vec3f> circles;
-
-    /// Apply the Hough Transform to find the circles
-    circles = houghCircleCalculation( grad_mag, grad_mag.rows/8, 50, 60 );
-    /// Draw the circles detected
+       
+    // Apply the Hough Transform to find the circles
+    circles = houghCircleCalculation( grad_mag, grad_mag.rows/8, 0, 100 );
+    
+    // Draw the circles detected
     cout << circles.size() << endl;
     for( size_t i = 0; i < circles.size(); i++ )
     {
@@ -237,9 +189,9 @@ void hough(Mat grad_mag, Mat grad_orient, int threshold, Mat org){
         int radius = cvRound(circles[i][2]);
        
         cout << "Radius is: " << radius << endl;
-        // circle center
+        // circle center for the middle point
         circle( src, center, 3, Scalar(0,255,0), -1, 8, 0 );
-        // circle outline
+        // circle outline for the circle shapes
         circle( src, center, radius, Scalar(0,0,255), 3, 8, 0 );
     }
     /// Show your results
@@ -250,51 +202,50 @@ void hough(Mat grad_mag, Mat grad_orient, int threshold, Mat org){
 }
 
 vector<Vec3f> houghCircleCalculation(Mat input, int minDist, int minRadius, int maxRadius){
+    // reimplement this
+    //HoughCircles(input, output, CV_HOUGH_GRADIENT, 1, minDist, 200, 100, minRadius, maxRadius);
+
     // some parameters to increase performance
-    int x_step_size = 4;
-    int y_step_size = 4;
+    int x_step_size = 2;
+    int y_step_size = 2;
     int theta_step_size = 4;
     int r_step_size = 2;
+
+    vector<Vec3f> output;
+
+    int t1 = 200;
+    int r = 53;
 
     cout << "minDist: " << minDist << endl;
     cout << "minRadius: " << minRadius << endl;
     cout << "minRadius: " << maxRadius << endl;
-
-    // reimplement this
-    // HoughCircles(input, output,CV_HOUGH_GRADIENT, 1, minDist, 200, 100, minRadius, maxRadius);
     
-    vector<Vec3f> output;
     cout << "Checkpoint 1" << endl;
     // init houghspace H with 0 everwhere
-    //int H[2][3][4];
-    int H[500][500][60];
-    //int H[input.cols][input.rows][maxRadius];
-    cout << "Checkpoint 1,5" << endl;
-    
+    //int H[500][500][60];
+    int H[500][500][1];
+    cout << "Checkpoint 2" << endl;
 
     for(int i = 0; i < input.cols; i++){
         for(int j = 0; j < input.rows; j++){
-            for(int k = minRadius; k < maxRadius; k++){
+            //for(int k = minRadius; k < maxRadius; k++){
+            int k = 0;
                 H[i][j][k] = 0;
-                //cout << i << " " << j << " " << k << endl;
-            }
+            //}
         }
     }
 
-    cout << "Checkpoint 2" << endl;
+    cout << "Checkpoint 3" << endl;
 
     // calculate houghspace
-    int t1 = 200;
-    int r = 53;
-    int counter = 0;
-    for(int r = minRadius; r < maxRadius-r_step_size; r=r+r_step_size){
+    //for(int r = minRadius; r < maxRadius-r_step_size; r=r+r_step_size){
         for(int y = 0; y < input.rows-y_step_size; y=y+y_step_size){
             for(int x = 0; x < input.cols-x_step_size; x=x+x_step_size){  
                 uchar pixel = input.at<uchar>(y,x);
                 if(pixel >= t1){
                     //circle(src, Point(x,y), r, Scalar(0,255,0),1,8,0);
                     //counter ++;
-                    //cout << "abc " << counter << endl;        
+                    cout << "abc " << endl;        
                     for(int theta = 0; theta < 360-theta_step_size; theta=theta+theta_step_size){
                     //int theta = 0;
                         // calculate the polar coordinates for the center
@@ -320,15 +271,15 @@ vector<Vec3f> houghCircleCalculation(Mat input, int minDist, int minRadius, int 
                 }
             }
         }
-    }
+    //}
 
-    cout << "Checkpoint 3" << endl;
+    cout << "Checkpoint 4" << endl;
 
    // imshow( "Abc Transform", src );
    // waitKey(0);
 
     // threshold
-    int t = 4;
+    int t = 1;
     for(int i = 0; i < input.cols; i++){
         for(int j = 0; j < input.rows; j++){
             for(int k = minRadius; k < maxRadius; k++){
@@ -341,8 +292,7 @@ vector<Vec3f> houghCircleCalculation(Mat input, int minDist, int minRadius, int 
         }
     }
 
-    cout << "Checkpoint 4" << endl;
-   // cout << output << endl;
+    cout << "Checkpoint 5" << endl;
     cout << output.size() << endl;
     return output;
 }
