@@ -18,7 +18,7 @@ void thresholdX(Mat input, Mat output, int T);
 
 void hough(Mat grad_mag, Mat grad_orient, int threshold, Mat org);
 
-vector<Vec3f> houghCircleCalculation(Mat input, int minDist, int minRadius, int maxRadius);
+void houghCircleCalculation(Mat input, vector<Vec3f> output, int minDist, int minRadius, int maxRadius);
 
 // just for debugging
 String type2str(int type);
@@ -27,7 +27,7 @@ int main() {
     cout << "Hello Dartboard Detector!" << endl;
 
     // input image
-    String input_file_name = "dart1.jpg";
+    String input_file_name = "dart1.jpg"/*"coins2.png"*/;
     Mat image = imread(input_file_name, 1);
     cout << "Loaded image '" << input_file_name << "' as input file." << endl;
 
@@ -179,8 +179,10 @@ void hough(Mat grad_mag, Mat grad_orient, int threshold, Mat org){
     vector<Vec3f> circles;
        
     // Apply the Hough Transform to find the circles
-    circles = houghCircleCalculation( grad_mag, grad_mag.rows/8, 0, 100 );
+    //houghCircleCalculation( grad_mag, circles, grad_mag.rows/8, 0, 100 );
+    HoughCircles(grad_mag, circles, CV_HOUGH_GRADIENT, 1, grad_mag.rows/8, 200, 100, 0, 0 );
     
+
     // Draw the circles detected
     cout << circles.size() << endl;
     for( size_t i = 0; i < circles.size(); i++ )
@@ -201,17 +203,16 @@ void hough(Mat grad_mag, Mat grad_orient, int threshold, Mat org){
     waitKey(0);
 }
 
-vector<Vec3f> houghCircleCalculation(Mat input, int minDist, int minRadius, int maxRadius){
+void houghCircleCalculation(Mat input, vector<Vec3f> output, int minDist, int minRadius, int maxRadius){
     // reimplement this
-    //HoughCircles(input, output, CV_HOUGH_GRADIENT, 1, minDist, 200, 100, minRadius, maxRadius);
+    HoughCircles(input, output, CV_HOUGH_GRADIENT, 1, input.rows/8, 200, 100, 0, 0 );
+    return;
 
     // some parameters to increase performance
     int x_step_size = 2;
     int y_step_size = 2;
     int theta_step_size = 4;
     int r_step_size = 2;
-
-    vector<Vec3f> output;
 
     int t1 = 200;
     int r = 53;
@@ -294,7 +295,6 @@ vector<Vec3f> houghCircleCalculation(Mat input, int minDist, int minRadius, int 
 
     cout << "Checkpoint 5" << endl;
     cout << output.size() << endl;
-    return output;
 }
 
 
