@@ -4,7 +4,7 @@
 
 CC=g++
 
-EXES=dartboard createsamples trainmodel face houghtransform
+EXES=dartboard createsamples trainmodel face houghtransform newhough
 
 NUM_OF_IMAGES=1000
 
@@ -17,6 +17,9 @@ dartboard: dartboard.cpp
 	$(CC) -o $@ $^ `pkg-config opencv --cflags --libs`
 
 houghtransform: houghtransform.cpp
+	$(CC) -o $@ $^ `pkg-config opencv --cflags --libs`
+
+newhough: newhough.cpp
 	$(CC) -o $@ $^ `pkg-config opencv --cflags --libs`
 
 createsamples: dart.bmp

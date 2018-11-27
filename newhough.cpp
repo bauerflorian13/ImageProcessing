@@ -18,32 +18,42 @@ void thresholdX(Mat input, Mat output, int T);
 
 void hough(Mat grad_mag, Mat grad_orient, int threshold, Mat org);
 
+vector<Vec3f> houghCircleCalculation(Mat input, int minDist, int minRadius, int maxRadius);
+
 // just for debugging
 string type2str(int type);
 
 int main() {
-    cout << "Hello New Hough!\n";
+    cout << "Hello Circle Detector" << endl;
 
-    Mat image = imread("dart1.jpg", 1);
+    // input image
+    String input_filename = "dart1.jpg";
+    Mat image = imread(input_filename, 1);
+    cout << "Loaded image '" << input_filename << "' as input file." << endl;
 
     // Convert to gray scale
     Mat gray_image;
     cvtColor(image, gray_image, CV_BGR2GRAY);
     imwrite("gray_img.jpg", gray_image);
+    cout << "Converted image to gray scale image." << endl;
 
     // Sobel filter
-    Mat sobelX = Mat(gray_image.size(), CV_8U);//gray_image.clone();
-    Mat sobelY = Mat(gray_image.size(), CV_8U);//gray_image.clone();
-    Mat sobelMag = Mat(gray_image.size(), CV_8U);//gray_image.clone();
-    Mat sobelDir = Mat(gray_image.size(), CV_8U);//gray_image.clone();
+    cout << "Begin Sobel filter calculation..." << endl;
+    Mat sobelY = Mat(gray_image.size(), CV_8U);
+    Mat sobelX = Mat(gray_image.size(), CV_8U);
+    Mat sobelMag = Mat(gray_image.size(), CV_8U);
+    Mat sobelDir = Mat(gray_image.size(), CV_8U);
     sobel(gray_image, sobelX, sobelY, sobelMag, sobelDir);
+    cout << "Finished Sobel calculation!" << endl;
 
-    printf("Hello!\n");
-    Mat thresholdSobelMag = Mat(gray_image.size(), CV_8U);//gray_image.clone();
-    thresholdX(sobelMag, thresholdSobelMag, 100);
-    printf("Bye!\n");
+    cout << "Begin thresholding sobelMag image..." << endl;
+    Mat thresholdSobelMag = Mat(gray_image.size(), CV_8U);
+    thresholdX(thresholdSobelMag, thresholdSobelMag, 100);
+    cout << "Finished thresholding sobelMag image!" << endl;
 
-    hough(gray_image,sobelDir, 100, image);
+    cout << "Begin hough transformation..." << endl;
+    hough(sobelMag, sobelDir, 100, image);
+    cout << "Finished hough transformation!" << endl;
 
     sobelX.deallocate();
     sobelY.deallocate();
@@ -164,26 +174,126 @@ void thresholdX(Mat input, Mat output, int T){
 
 void hough(Mat grad_mag, Mat grad_orient, int threshold, Mat org){
 
-Mat src = org;//Mat(341,441, CV_8U, Scalar(255));
+    Mat src = org;
+    vector<Vec3f> circles;
+    // Apply the Hough Transform to find the circles
+    circles = houghCircleCalculation( grad_mag, grad_mag.rows/8, 0, 0 );
 
-vector<Vec3f> circles;
+    // Draw the circles detected
+    for( size_t i = 0; i < circles.size(); i++ ) {
+        Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
+        int radius = cvRound(circles[i][2]);
 
-/// Apply the Hough Transform to find the circles
-HoughCircles( grad_mag, circles, CV_HOUGH_GRADIENT, 1,
-grad_mag.rows/8, 200, 100, 0, 0 );
-/// Draw the circles detected
-for( size_t i = 0; i < circles.size(); i++ )
-{
-    Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
-    int radius = cvRound(circles[i][2]);
-    // circle center
-    circle( src, center, 3, Scalar(0,255,0), -1, 8, 0 );
-    // circle outline
-    circle( src, center, radius, Scalar(0,0,255), 3, 8, 0 );
- }
-/// Show your results
-namedWindow( "Hough Circle Transform Demo", CV_WINDOW_AUTOSIZE );
-imshow( "Hough Circle Transform Demo", src );
-imwrite("hough.jpg", src);
-waitKey(0);
+        cout << "Radius is: " << radius << endl;
+        // circle center
+        circle( src, center, 3, Scalar(0,255,0), -1, 8, 0 );
+        // circle outline
+        circle( src, center, radius, Scalar(0,0,255), 3, 8, 0 );
+    }
+    // Show your results
+    cout << "Found " << circles.size() << " circles in the image!" << endl;
+    namedWindow( "Hough Circle Transform Demo", CV_WINDOW_AUTOSIZE );
+    imshow( "Hough Circle Transform Demo", src );
+    imwrite("hough.jpg", src);
+    waitKey(0);
 }
+
+vector<Vec3f> houghCircleCalculation(Mat input, int minDist, int minRadius, int maxRadius){
+    // reimplement this
+    vector<Vec3f> output;
+    //HoughCircles(input, output, CV_HOUGH_GRADIENT, 1, input.rows/8, 200, 100, 0, 0 );
+    //return output;
+
+    // some parameters to increase performance
+    int x_step_size = 1;
+    int y_step_size = 1;
+    int theta_step_size = 1;
+    int r_step_size = 2;
+
+    int t1 = 200; 
+    int r = 53;
+    int t = 150; // this is the threshold for detecting a center of a cricle as a center!
+    int debug = 0;
+
+    cout << "minDist: " << minDist << endl;
+    cout << "minRadius: " << minRadius << endl;
+    cout << "minRadius: " << maxRadius << endl;
+    
+    cout << "Checkpoint 1" << endl;
+    // init houghspace H with 0 everwhere
+    //int H[500][500][60];
+    int H[input.cols][input.rows][1];
+    cout << "Checkpoint 2" << endl;
+
+    for(int i = 0; i < input.cols; i++){
+        for(int j = 0; j < input.rows; j++){
+            //for(int k = minRadius; k < maxRadius; k++){
+            int k = 0;
+            H[i][j][k] = 0;
+            //}
+        }
+    }
+
+    cout << "Checkpoint 3" << endl;
+    
+    // calculate houghspace
+    //for(int r = minRadius; r < maxRadius-r_step_size; r=r+r_step_size){
+        for(int y = 0; y < input.rows-y_step_size; y=y+y_step_size){
+            for(int x = 0; x < input.cols-x_step_size; x=x+x_step_size){  
+                uchar pixel = input.at<uchar>(y,x);
+                if(pixel >= t1){
+                    //circle(src, Point(x,y), r, Scalar(0,255,0),1,8,0);
+                    //counter ++;
+                    cout << "abc " << endl;        
+                    for(int theta = 0; theta < 360-theta_step_size; theta=theta+theta_step_size){
+                    //int theta = 0;
+                        // calculate the polar coordinates for the center
+                        
+                        int a = x - r * cos(theta * CV_PI / 180);
+                        if(a < 0 || a >= input.cols){
+                            continue;
+                        }
+                        int b = y - r * sin(theta * CV_PI / 180);
+                        if(b < 0 || b >= input.rows){
+                            continue;
+                        }
+                        if (debug){
+                            cout << "x: " << x << endl;
+                            cout << "y: " << y << endl;
+                            cout << "Increment!" << endl;
+                        }
+                        // increase voting
+                        H[a][b][r] += 1;
+                        
+                    }
+                }
+            }
+        }
+    //}
+
+    cout << "Checkpoint 4" << endl;
+
+   // imshow( "Abc Transform", src );
+   // waitKey(0);
+
+    // threshold
+    t = t/ (y_step_size * x_step_size * theta_step_size);
+    for(int i = 0; i < input.cols; i++){
+        for(int j = 0; j < input.rows; j++){
+            //for(int k = minRadius; k < maxRadius; k++){
+                int k = 0;
+                if (H[i][j][k] > t){
+                    // circle detected
+                    cout << "Circle detected!" << endl;
+                    k = 53;
+                    output.push_back(Vec3f(i,j,k));
+                }
+            //}
+        }
+    }
+
+    cout << "Checkpoint 5" << endl;
+    cout << output.size() << endl;
+    return output;
+}
+
