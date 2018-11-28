@@ -13,7 +13,7 @@ all: $(EXES)
 face: face.cpp
 	$(CC) -o $@ $^ `pkg-config opencv --cflags --libs`
 
-dartboard: dartboard.cpp
+dartboard: dartboard.cpp newhough.cpp
 	$(CC) -o $@ $^ `pkg-config opencv --cflags --libs`
 
 houghtransform: houghtransform.cpp

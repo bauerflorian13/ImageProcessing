@@ -6,28 +6,17 @@
 #include <opencv2/highgui.hpp>   //adjust import locations
 #include <opencv2/imgproc.hpp>    //depending on your machine setup
 #include <opencv2/imgproc/imgproc.hpp>
+#include "newhough.h"
 
 using namespace cv;
 using namespace std;
 
-void convolute(Mat input_image, Mat output_image, Mat kernel);
 
-void sobel(Mat input, Mat sobelX, Mat sobelY, Mat sobelMag, Mat sobelDir);
-
-void thresholdX(Mat input, Mat output, int T);
-
-void hough(Mat grad_mag, Mat grad_orient, int threshold, Mat org);
-
-vector<Vec3f> houghCircleCalculation(Mat input, int minDist, int minRadius, int maxRadius);
-
-// just for debugging
-string type2str(int type);
-
-int main() {
+int main2() {
     cout << "Hello Circle Detector" << endl;
 
     // input image
-    String input_filename = "dart1.jpg";
+    String input_filename = "dart13.jpg";
     Mat image = imread(input_filename, 1);
     cout << "Loaded image '" << input_filename << "' as input file." << endl;
 
@@ -94,7 +83,6 @@ string type2str(int type) {
 }
 
 void sobel(Mat input, Mat sobelX, Mat sobelY, Mat sobelMag, Mat sobelDir){
-
     // deriative in x direction
     Mat kernelX(3, 3, CV_32F);
     kernelX.at<float>(0,0) = 1.0f;
@@ -144,7 +132,7 @@ void sobel(Mat input, Mat sobelX, Mat sobelY, Mat sobelMag, Mat sobelDir){
             float gy = sobelY.at<float>(y,x);
             float orient = (float) atan(gy / gx);
 
-            sobelDir.at<float>(y,x) = orient;// * 180/CV_PI;
+            sobelDir.at<float>(y,x) = orient;
         }
     }
 
@@ -172,7 +160,7 @@ void thresholdX(Mat input, Mat output, int T){
 }
 
 
-void hough(Mat grad_mag, Mat grad_orient, int threshold, Mat org){
+vector<Vec3f> hough(Mat grad_mag, Mat grad_orient, int threshold, Mat org){
 
     Mat src = org;
     vector<Vec3f> circles;
@@ -180,7 +168,7 @@ void hough(Mat grad_mag, Mat grad_orient, int threshold, Mat org){
     circles = houghCircleCalculation( grad_mag, grad_mag.rows/8, 30, 80 );
 
     // Draw the circles detected
-    for( size_t i = 0; i < circles.size(); i++ ) {
+    /*for( size_t i = 0; i < circles.size(); i++ ) {
         Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
         int radius = cvRound(circles[i][2]);
 
@@ -189,13 +177,14 @@ void hough(Mat grad_mag, Mat grad_orient, int threshold, Mat org){
         circle( src, center, 3, Scalar(0,255,0), -1, 8, 0 );
         // circle outline
         circle( src, center, radius, Scalar(0,0,255), 3, 8, 0 );
-    }
+    }*/
     // Show your results
-    cout << "Found " << circles.size() << " circles in the image!" << endl;
-    namedWindow( "Hough Circle Transform Demo", CV_WINDOW_AUTOSIZE );
-    imshow( "Hough Circle Transform Demo", src );
+    cout << "[INFO]: Found " << circles.size() << " circles in the image!" << endl;
+    //namedWindow( "Hough Circle Transform Demo", CV_WINDOW_AUTOSIZE );
+    //imshow( "Hough Circle Transform Demo", src );
     imwrite("hough.jpg", src);
     waitKey(0);
+    return circles;
 }
 
 vector<Vec3f> houghCircleCalculation(Mat input, int minDist, int minRadius, int maxRadius){
@@ -209,11 +198,10 @@ vector<Vec3f> houghCircleCalculation(Mat input, int minDist, int minRadius, int 
     int x_step_size = 1;
     int y_step_size = 1;
     int theta_step_size = 1;
-    int r_step_size = 1;
+    int r_step_size = 5;
 
-    int t1 = 200; 
-    int r = 53;
-    int t = 90; // this is the threshold for detecting a center of a cricle as a center!
+    int t1 = 200;
+    int t = 50; // this is the threshold for detecting a center of a cricle as a center!
         t = t/ (y_step_size * x_step_size * theta_step_size);
     int debug = 0;
 
@@ -278,7 +266,9 @@ vector<Vec3f> houghCircleCalculation(Mat input, int minDist, int minRadius, int 
                 }
                 if (H[i][j] > t){
                     // circle detected
-                    cout << "Circle detected!" << endl;
+                    if(debug){
+                        cout << "Circle detected!" << endl;
+                    }
                     output.push_back(Vec3f(i,j,r));
                 }
             }
