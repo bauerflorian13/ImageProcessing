@@ -6,6 +6,7 @@
 *.jpg
 !negatives/*.jpg
 !report/img/*.jpg
+!input_images/*.jpg
 
 # exclude all compiled executables. Compile them by your own
 dartboard
