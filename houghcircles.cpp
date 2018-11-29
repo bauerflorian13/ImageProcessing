@@ -6,56 +6,14 @@
 #include <opencv2/highgui.hpp>   //adjust import locations
 #include <opencv2/imgproc.hpp>    //depending on your machine setup
 #include <opencv2/imgproc/imgproc.hpp>
-#include "newhough.h"
+#include "houghcircles.h"
 
 using namespace cv;
 using namespace std;
 
 
-int main2() {
-    cout << "Hello Circle Detector" << endl;
-
-    // input image
-    String input_filename = "dart13.jpg";
-    Mat image = imread(input_filename, 1);
-    cout << "Loaded image '" << input_filename << "' as input file." << endl;
-
-    // Convert to gray scale
-    Mat gray_image;
-    cvtColor(image, gray_image, CV_BGR2GRAY);
-    imwrite("gray_img.jpg", gray_image);
-    cout << "Converted image to gray scale image." << endl;
-
-    // Sobel filter
-    cout << "Begin Sobel filter calculation..." << endl;
-    Mat sobelY = Mat(gray_image.size(), CV_8U);
-    Mat sobelX = Mat(gray_image.size(), CV_8U);
-    Mat sobelMag = Mat(gray_image.size(), CV_8U);
-    Mat sobelDir = Mat(gray_image.size(), CV_8U);
-    sobel(gray_image, sobelX, sobelY, sobelMag, sobelDir);
-    cout << "Finished Sobel calculation!" << endl;
-
-    cout << "Begin thresholding sobelMag image..." << endl;
-    Mat thresholdSobelMag = Mat(gray_image.size(), CV_8U);
-    thresholdX(thresholdSobelMag, thresholdSobelMag, 100);
-    cout << "Finished thresholding sobelMag image!" << endl;
-
-    cout << "Begin hough transformation..." << endl;
-    hough(sobelMag, sobelDir, 100, image);
-    cout << "Finished hough transformation!" << endl;
-
-    sobelX.deallocate();
-    sobelY.deallocate();
-    sobelMag.deallocate();
-    sobelDir.deallocate();
-    thresholdSobelMag.deallocate();
-
-    return 0;
-}
-
 void convolute(Mat input, Mat output, Mat kernel){
-    // at the moment use the opencv convolution, maybe implement it later by yourself
-     filter2D(input, output,-1, kernel);
+    filter2D(input, output,-1, kernel);
 }
 
 // method for debugging
@@ -201,7 +159,7 @@ vector<Vec3f> houghCircleCalculation(Mat input, int minDist, int minRadius, int 
     int r_step_size = 5;
 
     int t1 = 200;
-    int t = 80; // this is the threshold for detecting a center of a cricle as a center!
+    int t = 150; // this is the threshold for detecting a center of a cricle as a center!
         t = t/ (y_step_size * x_step_size * theta_step_size);
     int debug = 0;
 

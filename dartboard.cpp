@@ -7,7 +7,7 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include <iostream>
 #include <string>
-#include "newhough.h"
+#include "houghcircles.h"
 #include <algorithm>
 
 using namespace std;
@@ -104,8 +104,8 @@ int main(int argc, char** argv) {
     waitKey(0);
 
     // just for debugging
-	//imshow("Debugging dartboards", image2);
-    //waitKey(0);
+	imshow("Debugging dartboards", image2);
+    waitKey(0);
 
     return 0;
 }
@@ -127,10 +127,25 @@ std::vector<Rect> detectDartboards( Mat frame )
     return dartboards;
 }
 
+bool rectContainsPoint(Rect db, Point p, bool debug){
+    bool a1 = db.x < p.x; 
+    bool a2 = (db.x + db.width) > p.x;
+    bool a3 = db.y < p.y;
+    bool a4 = (db.y + db.height) > p.y;
+    bool a = a1 && a2 && a3 && a4;
+    if (debug){
+    cout << "--------------------" << endl;
+    cout << "a1: " << a1 << "| a2: " << a2 << "| a3: " << a3 << "| a4: " << a4 << endl;
+    cout << "dartboards[i].x: " << db.x << " | dartboards[i].y: " << db.y << endl;
+    cout << "dartboards[i].width: " << db.width << " | dartboards[i].height: " << db.height << endl;
+    cout << "circles[j][0]: " << p.x << " | circles[j][1]: " << p.y << endl;
+    }
+    return a;
+}
 
 std::vector<cv::Rect> selectDartboards(std::vector<cv::Rect> dartboards, std::vector<cv::Vec3f> circles){
     vector<Rect> matchedDartboards;
-
+    bool debug = 0;
     for(int i = 0; i < dartboards.size(); i++ )
 	{
         /**
@@ -144,18 +159,14 @@ std::vector<cv::Rect> selectDartboards(std::vector<cv::Rect> dartboards, std::ve
          **/
 		bool detected = false;
         for(int j = 0; j < circles.size(); j++){
-            bool a = dartboards[i].x < circles[j][0]; 
-            bool b = (dartboards[i].x + dartboards[i].width) > circles[j][0];
-            bool c = dartboards[i].y < circles[j][1];
-            bool d = (dartboards[i].y + dartboards[i].height) > circles[j][1];
-            cout << "--------------------" << endl;
-            cout << "a: " << a << "| b: " << b << "| c: " << c << "| d: " << d << endl;
-            cout << "dartboards[i].x: " << dartboards[i].x << " | dartboards[i].y: " << dartboards[i].y << endl;
-            cout << "dartboards[i].width: " << dartboards[i].width << " | dartboards[i].height: " << dartboards[i].height << endl;
-            cout << "circles[j][0]: " << circles[j][0] << " | circles[j][1]: " << circles[j][1] << endl;
-         
-            if (a && b && c && d){
+            bool a = rectContainsPoint(dartboards[i], Point(circles[j][0], circles[j][1]), false);
+            bool b = rectContainsPoint(dartboards[i], Point(circles[j][0]-circles[j][2], circles[j][1]), false);
+            bool c = rectContainsPoint(dartboards[i], Point(circles[j][0]+circles[j][2], circles[j][1]), false);
+            bool d = rectContainsPoint(dartboards[i], Point(circles[j][0], circles[j][1]-circles[j][2]), false);
+            bool e = rectContainsPoint(dartboards[i], Point(circles[j][0], circles[j][1]+circles[j][2]), false);
+            if (a && b && c && d && e){
                 detected = true;
+                break;
                 //cout << "Found matching dartboard!" << endl;
             }
         }
