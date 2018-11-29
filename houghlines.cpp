@@ -31,7 +31,7 @@ int main() {
     cout << "Hello Circle Detector" << endl;
 
     // input image
-    String input_filename = "input_images/dart1.jpg";
+    String input_filename = "input_images/dart2.jpg";
     Mat image = imread(input_filename, 1);
     cout << "Loaded image '" << input_filename << "' as input file." << endl;
 
@@ -230,15 +230,118 @@ void hough(Mat grad_mag, Mat grad_orient, int threshold, Mat org){
 }
 
 void findIntersections(vector<Vec2f> lines, Mat src){
-    int rho = 0;
-    float theta = 0;
+    int rho1 = 0;
+    int rho2 = 0;
+    float theta1 = 0;
+    float theta2 = 0;
     Rect rect(Point(), src.size());
     Point p(290,225);
-    circle( src, p, 1, Scalar(255,0,0), -1, 8, 0);
+
+    for( size_t i = 0; i < lines.size(); i++ )
+    {
+        float m1, dx1, dy1, c1;
+        float intersection_X, intersection_Y;
+        float rho1 = lines[i][0], theta1 = lines[i][1];
+        Point pt11, pt12;
+        double a1 = cos(theta1), b1 = sin(theta1);
+        double x01 = a1*rho1, y01 = b1*rho1;
+        pt11.x = cvRound(x01 + 1000*(-b1));
+        pt11.y = -cvRound(y01 + 1000*(a1));
+        pt12.x = cvRound(x01 - 1000*(-b1));
+        pt12.y = -cvRound(y01 - 1000*(a1));
+        // cout << "Points on first line:";
+        // cout << "    " << pt11;
+        // cout << "    " << pt12;
+
+        dx1 = pt12.x - pt11.x;
+        dy1 = pt12.y - pt11.y;
+
+        m1 = dy1 / dx1;
+        c1 = pt11.y - m1 * pt11.x;
+        // cout << "m1 : " << m1 << endl;
+
+        for( size_t j = 0; j < lines.size(); j++ )
+        {
+            float m2, dx2, dy2, c2;
+            float rho2 = lines[j][0], theta2 = lines[j][1];
+            Point pt21, pt22;
+            double a2 = cos(theta2), b2 = sin(theta2);
+            double x02 = a2*rho2, y02 = b2*rho2;
+            pt21.x = cvRound(x02 + 1000*(-b2));
+            pt21.y = -cvRound(y02 + 1000*(a2));
+            pt22.x = cvRound(x02 - 1000*(-b2));
+            pt22.y = -cvRound(y02 - 1000*(a2));
+            // cout << "Points on second line:";
+            // cout << "    " << pt21;
+            // cout << "    " << pt22 << endl;
+
+            dx2 = pt22.x - pt21.x;
+            dy2 = pt22.y - pt21.y;
+
+            m2 = dy2 / dx2;
+            c2 = pt21.y - m2 * pt21.x;
+
+            // cout << "m2 : " << m2 << endl;
+
+            if( (m1 - m2) == 0)
+              std::cout << "No Intersection between the lines\n";
+            else
+            {
+                intersection_X = (c2 - c1) / (m1 - m2);
+                intersection_Y = m1 * intersection_X + c1;
+                std::cout << "Intersecting Point: = ";
+                std::cout << intersection_X;
+                std::cout << ",";
+                std::cout << intersection_Y;
+                std::cout << "\n";
+                Point p(intersection_X, -intersection_Y);
+                circle( src, p, 2, Scalar(255,0,0), -1, 8, 0);
+            }
+
+        }
+    }
 
 
-    cout << lines.size() << endl;
+
+
+
+
+
+
+
+
+    // for( size_t i = 0; i < lines.size(); i++ )
+    // {
+    //     float rho1 = lines[i][0], theta1 = lines[i][1];
+    //     Point pt11, pt12;
+    //     double a1 = cos(theta2), b1 = sin(theta1);
+    //     double x01 = a1*rho1, y01 = b1*rho1;
+    //     pt11.x = cvRound(x01 + 1000*(-b1));
+    //     pt11.y = cvRound(y01 + 1000*(a1));
+    //     pt12.x = cvRound(x01 - 1000*(-b1));
+    //     pt12.y = cvRound(y01 - 1000*(a1));
+    //     cout << pt11 << endl;
+    //     cout << pt12 << endl;
+    //     // line( org, pt1, pt2, Scalar(0,0,255), 3, CV_AA);
+    //     for (size_t j=0; j < lines.size(); j++){
+    //       float rho2 = lines[j][0], theta2 = lines[j][1];
+    //       Point pt21, pt22;
+    //       double a2 = cos(theta2), b2 = sin(theta2);
+    //       double x02 = a2*rho2, y02 = b2*rho2;
+    //       pt21.x = cvRound(x02 + 1000*(-b2));
+    //       pt21.y = cvRound(y02 + 1000*(a2));
+    //       pt22.x = cvRound(x02 - 1000*(-b2));
+    //       pt22.y = cvRound(y02 - 1000*(a2));
+    //       // cout << pt21 << endl;
+    //       // cout << pt22 << endl;
+    //
+    //       cout << endl;
+    //     }
+    // }
+
+/*
     for(int i = 0; i<lines.size(); i++){
+
     //     if (lines[i][1]*(180/CV_PI)>100) {
     //     cout << lines[i][0] << endl;
     //     cout << lines[i][1]*(180/CV_PI) << " degrees" << endl;
@@ -265,7 +368,7 @@ void findIntersections(vector<Vec2f> lines, Mat src){
             Point2f line1p2 (line1vector[0], line1yintercept+(line1vector[1]));
             Point2f line2p1 (0, line2yintercept);
             Point2f line2p2 (line2vector[0], line2yintercept+(line2vector[1]));
-            // cout << "  "<< line1p1 << endl;
+             cout << "  "<< line1p2 << endl;
             // cout << "  "<< line1p2 << endl;
             // cout << line1angle << endl;
             // cout << line1angle*180/CV_PI << endl;
@@ -313,7 +416,9 @@ void findIntersections(vector<Vec2f> lines, Mat src){
             // cout << point << endl;
 
         }
+
     }
+    */
 }
 
 vector<Vec2f> houghLinesCalculation(Mat input, int minDist, int minRadius, int maxRadius){
