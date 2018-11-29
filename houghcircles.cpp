@@ -68,30 +68,21 @@ void sobel(Mat input, Mat sobelX, Mat sobelY, Mat sobelMag, Mat sobelDir){
     kernelY.at<float>(2,2) = -1.0f;
 
     convolute(input,sobelY,kernelY);
+    
+    //approximation for the sobel magnitude
+    addWeighted(sobelX, 0.5, sobelY, 0.5, 0, sobelMag);
 
-    for(int y = 0; y < input.rows; y++){
-        for(int x = 0; x < input.cols; x++){
-            float gx = abs(sobelX.at<float>(y,x));
-            float gy = abs(sobelY.at<float>(y,x));
-            float g = (gx + gy);
-            sobelMag.at<float>(y,x) = (float) g;
-        }
-    }
+    // calculate the direction of the gradient
+    // TOOD: check convertion here
+    sobelX.convertTo(sobelX, CV_32F);
+    sobelX.convertTo(sobelY, CV_32F);
+    phase(sobelX, sobelY, sobelDir);
+    sobelDir.convertTo(sobelDir, CV_8UC1);
+
     cout << "Type of sobelX: " << type2str(sobelX.type()) << endl;
     cout << "Type of sobelY: " << type2str(sobelY.type()) << endl;
     cout << "Type of sobelMag: " << type2str(sobelMag.type()) << endl;
-
-    // calculate the direction of the gradient
-    // the orientation O = arctan(G_y / G_x)
-    for(int y = 0; y < input.rows; y++){
-        for(int x = 0; x < input.cols; x++){
-            float gx = sobelX.at<float>(y,x);
-            float gy = sobelY.at<float>(y,x);
-            float orient = (float) atan(gy / gx);
-
-            sobelDir.at<float>(y,x) = orient;
-        }
-    }
+    cout << "Type of sobelDir: " << type2str(sobelDir.type()) << endl;
 
     // save all images
     imwrite("workdir/sobelGradientMagnitude.jpg", sobelMag);
@@ -138,10 +129,10 @@ vector<Vec3f> houghCircleCalculation(Mat input, int minDist, int minRadius, int 
     int x_step_size = 1;
     int y_step_size = 1;
     int theta_step_size = 1;
-    int r_step_size = 5;
+    int r_step_size = 1;
 
     int t1 = 200;
-    int t = 150; // this is the threshold for detecting a center of a cricle as a center!
+    int t = 120; // this is the threshold for detecting a center of a cricle as a center!
         t = t/ (y_step_size * x_step_size * theta_step_size);
     int debug = 0;
 

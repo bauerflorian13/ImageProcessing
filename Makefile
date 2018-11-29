@@ -13,6 +13,9 @@ all: $(EXES)
 dartboard: dartboard.cpp houghcircles.cpp
 	$(CC) -o $@ $^ `pkg-config opencv --cflags --libs`
 
+houghlines: houghlines.cpp
+	$(CC) -o $@ $^ `pkg-config opencv --cflags --libs`
+
 createsamples: dart.bmp
 	opencv_createsamples -img dart.bmp -vec dart.vec -neg negatives.dat -w 20 -h 20 -num $(NUM_OF_IMAGES) -maxidev 80 -maxxangle 0.8 -maxyangle 0.8 -maxzangle 0.2
 

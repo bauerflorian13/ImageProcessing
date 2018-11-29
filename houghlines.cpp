@@ -31,7 +31,7 @@ int main() {
     cout << "Hello Circle Detector" << endl;
 
     // input image
-    String input_filename = "dart1.jpg";
+    String input_filename = "input_images/dart1.jpg";
     Mat image = imread(input_filename, 1);
     cout << "Loaded image '" << input_filename << "' as input file." << endl;
 
