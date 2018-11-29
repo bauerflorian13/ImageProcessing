@@ -8,13 +8,16 @@
 #include <iostream>
 #include <string>
 #include "newhough.h"
+#include <algorithm>
 
 using namespace std;
 using namespace cv;
 
-std::vector<cv::Rect> detectDartboards( Mat frame );
+std::vector<cv::Rect> detectDartboards(Mat frame);
 
-std::vector<cv::Rect> selectDartboards(std::vector<cv::Rect> dartboard, std::vector<cv::Vec3f> circles);
+std::vector<cv::Rect> selectDartboards(std::vector<cv::Rect> dartboards, std::vector<cv::Vec3f> circles);
+
+std::vector<cv::Rect> mergeDartboards(std::vector<cv::Rect> dartboards);
 
 void drawDartboards(std::vector<cv::Rect> dartboards, cv::Mat image);
 
@@ -48,13 +51,13 @@ int main(int argc, char** argv) {
 
     cout << "Begin thresholding sobelMag image..." << endl;
     Mat thresholdSobelMag = Mat(gray_image.size(), CV_8U);
-    thresholdX(thresholdSobelMag, thresholdSobelMag, 100);
+    thresholdX(sobelMag, thresholdSobelMag, 100);
     cout << "Finished thresholding sobelMag image!" << endl;
 
     // detect circles
     cout << "Begin hough transformation..." << endl;
     vector<Vec3f> circles;
-    circles = hough(sobelMag, sobelDir, 100, image);
+    circles = hough(thresholdSobelMag, sobelDir, 100, image);
     cout << "Finished hough transformation!" << endl;
 
 	// load the Strong Classifier in a structure called `Cascade'
@@ -75,6 +78,9 @@ int main(int argc, char** argv) {
     dartboards = selectDartboards(dartboards, circles);
     cout << "Finished dartboard selection!" << endl;
 
+    // merge overlapping dartboards together
+    dartboards =  mergeDartboards(dartboards);
+    
     // draw dartboards on the image
     cout << "Start drawing dartboards on the image...!" << endl;
     Mat image2 = image.clone();
@@ -169,7 +175,48 @@ void drawDartboards(vector<Rect> dartboards, Mat image){
 	{
 		rectangle(image, Point(dartboards[i].x, dartboards[i].y), Point(dartboards[i].x + dartboards[i].width, dartboards[i].y + dartboards[i].height), Scalar( 0, 255, 0 ), 2);
 	}
+}
 
+//TODO: implement this or fix the code below
+std::vector<cv::Rect> mergeDartboards(std::vector<cv::Rect> dartboards){
+    /*vector<Rect> newDartboards;
+    vector<Rect> mergedDartboards;
+    bool anychange = false;
+    for(int i = 0; i < dartboards.size(); i++ )
+	{
+		for(int k = 0; k < dartboards.size(); k++ )
+	    {
+            if (i == k){
+                continue;
+            }
+            bool acontb = dartboards[i].contains(Point(dartboards[k].x, dartboards[k].y));
+            //bool bconta = dartboards[k].contains(Point(dartboards[i].x, dartboards[i].y));
+            if (acontb){
+                Rect r;
+                r = Rect((int) dartboards[i].x, (int) dartboards[i].y, 
+                (int) dartboards[k].x + dartboards[k].width - dartboards[i].x, 
+                (int) dartboards[k].y + dartboards[k].height - dartboards[i].y);
+
+                newDartboards.push_back(r);
+                // cout << "HELLLLOOO!" << endl;
+                anychange = true;
+                mergedDartboards.push_back(dartboards[i]);
+                mergedDartboards.push_back(dartboards[k]);
+            }
+        }
+    }
+
+    for(int i = 0; i < dartboards.size(); i++){
+        if(!count(mergedDartboards.begin(), mergedDartboards.end(), dartboards[i])){
+            newDartboards.push_back(dartboards[i]);
+        }
+    }
+    if (anychange){
+        cout << newDartboards.size() << endl;
+        return mergeDartboards(newDartboards);
+    }*/
+    return dartboards;
+    //return newDartboards;
 }
 
 void drawDebugDartboards(vector<Rect> dartboards, vector<Vec3f>circles, Mat image){
@@ -186,5 +233,4 @@ void drawDebugDartboards(vector<Rect> dartboards, vector<Vec3f>circles, Mat imag
         // circle outline
         circle( image, center, radius, Scalar(0,0,255), 2, 8, 0 );
     }
-
 }

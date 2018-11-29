@@ -201,7 +201,7 @@ vector<Vec3f> houghCircleCalculation(Mat input, int minDist, int minRadius, int 
     int r_step_size = 5;
 
     int t1 = 200;
-    int t = 50; // this is the threshold for detecting a center of a cricle as a center!
+    int t = 80; // this is the threshold for detecting a center of a cricle as a center!
         t = t/ (y_step_size * x_step_size * theta_step_size);
     int debug = 0;
 
@@ -213,6 +213,12 @@ vector<Vec3f> houghCircleCalculation(Mat input, int minDist, int minRadius, int 
 
     // init houghspace H
     int H[input.cols][input.rows];
+    Mat houghspace = input.clone();
+    for(int i = 0; i < input.cols; i++){
+            for(int j = 0; j < input.rows; j++){
+                houghspace.at<uchar>(j,i) = 0;
+            }
+        }
     cout << "Checkpoint 02: inited hough space" << endl;
 
     for(int r = minRadius; r < maxRadius-r_step_size; r=r+r_step_size){
@@ -274,8 +280,16 @@ vector<Vec3f> houghCircleCalculation(Mat input, int minDist, int minRadius, int 
             }
         }
         cout << "\tDone!" << endl;
+        // merge the houghspace to a 2D image
+        for(int i = 0; i < input.cols; i++){
+            for(int j = 0; j < input.rows; j++){
+                houghspace.at<uchar>(j,i) = houghspace.at<uchar>(j,i) + ( (H[i][j]*r_step_size*3)/(maxRadius-minRadius) );
+            }
+        }
         cout << "[DEBUG]: Max value found in the houghspace was '" << max << "'" << endl;
     }
+
+    imwrite("houghspace.jpg", houghspace);
 
     cout << "[DEBUG]: Circle detecting for all radius finished!" << endl;
     return output;
