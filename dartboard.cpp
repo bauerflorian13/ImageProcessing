@@ -29,6 +29,15 @@ CascadeClassifier cascade;
 int main(int argc, char** argv) {
     cout << "Hello Circle Detector" << endl;
 
+    bool viewmode;
+    if(argc == 3){
+        char c = argv[2][0];
+        viewmode = c != '0';
+    }else{
+        viewmode = true;
+    }
+    cout << "View mode is '" << viewmode << "'" << endl;
+
     // input image
     String input_filename = argv[1];
     input_filename = "input_images/" + input_filename;
@@ -99,13 +108,15 @@ int main(int argc, char** argv) {
 	prefix = "output_images/detected2_";
 	imwrite( (prefix + filename), image2);
 
-    // show the detected dartboards in the end
-	imshow("Detected dartboards", image);
-    waitKey(0);
+    if(viewmode){
+        // show the detected dartboards in the end
+        imshow("Detected dartboards", image);
+        waitKey(0);
 
-    // just for debugging
-	imshow("Debugging dartboards", image2);
-    waitKey(0);
+        // just for debugging
+        imshow("Debugging dartboards", image2);
+        waitKey(0);
+    }
 
     return 0;
 }
