@@ -81,7 +81,6 @@ void sobel(Mat input, Mat sobelX, Mat sobelY, Mat sobelMag, Mat sobelDir){
     cout << "Type of sobelY: " << type2str(sobelY.type()) << endl;
     cout << "Type of sobelMag: " << type2str(sobelMag.type()) << endl;
 
-    imwrite("sobelGradientMagnitude.jpg", sobelMag);
     // calculate the direction of the gradient
     // the orientation O = arctan(G_y / G_x)
     for(int y = 0; y < input.rows; y++){
@@ -95,9 +94,10 @@ void sobel(Mat input, Mat sobelX, Mat sobelY, Mat sobelMag, Mat sobelDir){
     }
 
     // save all images
-    imwrite("sobelX.jpg", sobelX);
-    imwrite("sobelY.jpg", sobelY);
-    imwrite("sobelGradientDirection.jpg", sobelDir);
+    imwrite("workdir/sobelGradientMagnitude.jpg", sobelMag);
+    imwrite("workdir/sobelX.jpg", sobelX);
+    imwrite("workdir/sobelY.jpg", sobelY);
+    imwrite("workdir/sobelGradientDirection.jpg", sobelDir);
 }
 
 void thresholdX(Mat input, Mat output, int T){
@@ -114,34 +114,16 @@ void thresholdX(Mat input, Mat output, int T){
     }
 
     // save the threshold image
-    imwrite("threshold.jpg", output);
+    imwrite("workdir/threshold.jpg", output);
 }
 
 
 vector<Vec3f> hough(Mat grad_mag, Mat grad_orient, int threshold, Mat org){
-
-    Mat src = org;
     vector<Vec3f> circles;
     // Apply the Hough Transform to find the circles
     circles = houghCircleCalculation( grad_mag, grad_mag.rows/8, 30, 80 );
 
-    // Draw the circles detected
-    /*for( size_t i = 0; i < circles.size(); i++ ) {
-        Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
-        int radius = cvRound(circles[i][2]);
-
-        cout << "Radius is: " << radius << endl;
-        // circle center
-        circle( src, center, 3, Scalar(0,255,0), -1, 8, 0 );
-        // circle outline
-        circle( src, center, radius, Scalar(0,0,255), 3, 8, 0 );
-    }*/
-    // Show your results
     cout << "[INFO]: Found " << circles.size() << " circles in the image!" << endl;
-    //namedWindow( "Hough Circle Transform Demo", CV_WINDOW_AUTOSIZE );
-    //imshow( "Hough Circle Transform Demo", src );
-    imwrite("hough.jpg", src);
-    waitKey(0);
     return circles;
 }
 
@@ -247,7 +229,7 @@ vector<Vec3f> houghCircleCalculation(Mat input, int minDist, int minRadius, int 
         cout << "[DEBUG]: Max value found in the houghspace was '" << max << "'" << endl;
     }
 
-    imwrite("houghspace.jpg", houghspace);
+    imwrite("workdir/houghspace.jpg", houghspace);
 
     cout << "[DEBUG]: Circle detecting for all radius finished!" << endl;
     return output;

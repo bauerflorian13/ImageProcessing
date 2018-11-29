@@ -31,13 +31,14 @@ int main(int argc, char** argv) {
 
     // input image
     String input_filename = argv[1];
+    input_filename = "input_images/" + input_filename;
     Mat image = imread(input_filename, 1);
-    cout << "Loaded image '" << input_filename << "' as input file." << endl;
+    cout << "Loaded image '" << input_filename << "' from input_images directory as input file." << endl;
 
     // Convert to gray scale
     Mat gray_image;
     cvtColor(image, gray_image, CV_BGR2GRAY);
-    imwrite("gray_img.jpg", gray_image);
+    imwrite("workdir/gray_img.jpg", gray_image);
     cout << "Converted image to gray scale image." << endl;
 
     // Sobel filter
@@ -89,14 +90,13 @@ int main(int argc, char** argv) {
     cout << "Finished drawing dartboards!" << endl;    
 
 	// Save Result Image
-	string prefix = "detected_";
+	string prefix = "output_images/detected_";
 	string filename = argv[1];
 	imwrite( (prefix + filename), image);
 
 
 	// Save Result Image
-	prefix = "detected2_";
-	filename = argv[1];
+	prefix = "output_images/detected2_";
 	imwrite( (prefix + filename), image2);
 
     // show the detected dartboards in the end
