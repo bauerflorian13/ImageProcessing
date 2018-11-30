@@ -331,7 +331,16 @@ implementation.
 
 \subsection{Rationale}
 \begin{itemize}
-	\item 
+	\item In order to avoid false positives produced by dartboards being detected multiple times with Viola-Jones overlapping boards have been consolidated into one.
+	\item This works due to the assumption that boards would not be expected to overlap or lie within the edge of another in reality due to their positioning being mounted typically on solid walls, and being of fixed size.
+\end{itemize}
+
+\textbf{Future Improvements}
+\begin{itemize}
+	\item Add an implementation of a Hough Lines detector detecting line intersections. 
+	\item Any point at or near which multiple lines intersect is potentially the centre of a dart board.
+	\item The efficacy of this method is largely independent of the angle at which the dartboard is viewed.
+	\item Adding this detection of potential dartboard centres to the combined model can be done in a similar way to the addition of the circle detector.
 \end{itemize}
 
 \subsection{Images showing aspects of the final technique}
