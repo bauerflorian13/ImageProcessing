@@ -2,15 +2,14 @@
 #include <stdlib.h>
 #include <iostream>
 #include <string>
-#include <opencv2/core.hpp>        //you may need to
-#include <opencv2/highgui.hpp>   //adjust import locations
-#include <opencv2/imgproc.hpp>    //depending on your machine setup
+#include <opencv2/core.hpp>
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include "houghcircles.h"
 
 using namespace cv;
 using namespace std;
-
 
 void convolute(Mat input, Mat output, Mat kernel){
     filter2D(input, output,-1, kernel);
@@ -40,7 +39,7 @@ string type2str(int type) {
   return r;
 }
 
-void sobel(Mat input, Mat sobelX, Mat sobelY, Mat sobelMag, Mat sobelDir){
+void sobel(Mat input, Mat sobelX, Mat sobelY, Mat sobelMag, Mat sobelDir, bool debug_mode){
     // deriative in x direction
     Mat kernelX(3, 3, CV_32F);
     kernelX.at<float>(0,0) = 1.0f;
@@ -79,10 +78,12 @@ void sobel(Mat input, Mat sobelX, Mat sobelY, Mat sobelMag, Mat sobelDir){
     phase(sobelX, sobelY, sobelDir);
     sobelDir.convertTo(sobelDir, CV_8UC1);
 
-    cout << "Type of sobelX: " << type2str(sobelX.type()) << endl;
-    cout << "Type of sobelY: " << type2str(sobelY.type()) << endl;
-    cout << "Type of sobelMag: " << type2str(sobelMag.type()) << endl;
-    cout << "Type of sobelDir: " << type2str(sobelDir.type()) << endl;
+    if(debug_mode){
+        cout << "[DEBUG SOBEL]: Type of sobelX: " << type2str(sobelX.type()) << endl;
+        cout << "[DEBUG SOBEL]: Type of sobelY: " << type2str(sobelY.type()) << endl;
+        cout << "[DEBUG SOBEL]: Type of sobelMag: " << type2str(sobelMag.type()) << endl;
+        cout << "[DEBUG SOBEL]: Type of sobelDir: " << type2str(sobelDir.type()) << endl;
+    }
 
     // save all images
     imwrite("workdir/sobelGradientMagnitude.jpg", sobelMag);
@@ -109,18 +110,18 @@ void thresholdX(Mat input, Mat output, int T){
 }
 
 
-vector<Vec3f> hough(Mat grad_mag, Mat grad_orient, int threshold, Mat org){
+vector<Vec3f> hough(Mat grad_mag, Mat grad_orient, int threshold, Mat org, bool debug_mode){
     vector<Vec3f> circles;
     // Apply the Hough Transform to find the circles
-    circles = houghCircleCalculation( grad_mag, grad_mag.rows/8, 30, 80 );
+    circles = houghCircleCalculation(grad_mag, 30, 80, debug_mode);
 
     cout << "[INFO]: Found " << circles.size() << " circles in the image!" << endl;
     return circles;
 }
 
-vector<Vec3f> houghCircleCalculation(Mat input, int minDist, int minRadius, int maxRadius){
+vector<Vec3f> houghCircleCalculation(Mat input, int minRadius, int maxRadius, bool debug_mode){
     vector<Vec3f> output;
-    // reimplement this
+    // reimplement this opencv inbuilt function
     //HoughCircles(input, output, CV_HOUGH_GRADIENT, 1, input.rows/8, 200, 100, 0, 0 );
     //return output;
 
@@ -131,16 +132,22 @@ vector<Vec3f> houghCircleCalculation(Mat input, int minDist, int minRadius, int 
     int theta_step_size = 1;
     int r_step_size = 1;
 
-    int t1 = 200;
+    int pixelThreshold = 200; // this is the threshold for drawing a circle around the pixel if the pixel is bright enough
     int t = 120; // this is the threshold for detecting a center of a cricle as a center!
         t = t/ (y_step_size * x_step_size * theta_step_size);
-    int debug = 0;
 
-    cout << "minDist: " << minDist << endl;
-    cout << "minRadius: " << minRadius << endl;
-    cout << "minRadius: " << maxRadius << endl;
+    cout << "[INFO HOUGH]: minRadius: " << minRadius << endl;
+    cout << "[INFO HOUGH]: maxRadius: " << maxRadius << endl;
+    cout << "[INFO HOUGH]: debug_mode: " << debug_mode << endl;
+    cout << "[INFO HOUGH]: x_step_size: " << x_step_size << endl;
+    cout << "[INFO HOUGH]: y_step_size: " << y_step_size << endl;
+    cout << "[INFO HOUGH]: r_step_size: " << r_step_size << endl;
+    cout << "[INFO HOUGH]: theta_step_size: " << theta_step_size << endl;
+    cout << "[INFO HOUGH]: threshold for detecting circles: " << t << endl;
     
-    cout << "Checkpoint 01: inited params" << endl;
+    if (debug_mode){
+        cout << "[DEBUG HOUGHCIRCLE]: Checkpoint 01: inited params" << endl;
+    }
 
     // init houghspace H
     int H[input.cols][input.rows];
@@ -150,28 +157,44 @@ vector<Vec3f> houghCircleCalculation(Mat input, int minDist, int minRadius, int 
                 houghspace.at<uchar>(j,i) = 0;
             }
         }
-    cout << "Checkpoint 02: inited hough space" << endl;
 
-    for(int r = minRadius; r < maxRadius-r_step_size; r=r+r_step_size){
-        cout << "[DEBUG]: --- Start new Houghspace calculation for Radius '" << r << "' ---" << endl;
-        cout << "[DEBUG]: Start resetting houghspace...";
+
+
+    if (debug_mode){
+        cout << "[DEBUG HOUGHCIRCLE]: Checkpoint 02: inited hough space" << endl;
+    }
+
+    for(int r = minRadius; r < maxRadius; r=r+r_step_size){
+        if (debug_mode){
+        cout << "[DEBUG HOUGHCIRCLE]: --- Start new Houghspace calculation for Radius '" << r << "' ---" << endl;
+        cout << "[DEBUG HOUGHCIRCLE]: Start resetting houghspace...";
+        }
+        // kind of a progress indicator
+        double progress = (r - minRadius) * 100 / (maxRadius - minRadius);
+        cout << "[INFO HOUGH]: Progress: " <<  progress << " \%" << endl;
+
         // reset hough space
         for(int i = 0; i < input.cols; i++){
             for(int j = 0; j < input.rows; j++){
                 H[i][j] = 0;
             }
         }
-        cout << "\tDone!" << endl;
 
-        cout << "[DEBUG]: Start calculating the houghspace...";
+        if(debug_mode){
+            cout << "\tDone!" << endl;
+            cout << "[DEBUG HOUGHCIRCLE]: Start calculating the houghspace...";
+        }
+
         // calculate houghspace
         for(int y = 0; y < input.rows-y_step_size; y=y+y_step_size){
             for(int x = 0; x < input.cols-x_step_size; x=x+x_step_size){  
                 uchar pixel = input.at<uchar>(y,x);
-                if(pixel >= t1){
+                if(pixel >= pixelThreshold){
+                    // draw circle around the pixel
                     for(int theta = 0; theta < 360-theta_step_size; theta=theta+theta_step_size){
                         // calculate the polar coordinates for the center    
                         int a = x - r * cos(theta * CV_PI / 180);
+                        // skip coordinates outside the image
                         if(a < 0 || a >= input.cols){
                             continue;
                         }
@@ -179,50 +202,59 @@ vector<Vec3f> houghCircleCalculation(Mat input, int minDist, int minRadius, int 
                         if(b < 0 || b >= input.rows){
                             continue;
                         }
-                        if (debug){
-                            cout << "x: " << x << endl;
-                            cout << "y: " << y << endl;
-                            cout << "Increment!" << endl;
-                        }
                         // increase voting
-                        H[a][b] += 1;
-                        
+                        H[a][b] += 1;                 
                     }
                 }
             }
         }
-        cout << "\tDone!" << endl;
 
-        cout << "[DEBUG]: Start detecting the circles...";
+        if (debug_mode){
+            cout << "\tDone!" << endl;
+            cout << "[DEBUG HOUGHCIRCLE]: Start detecting the circles...";
+        }
         int max = 0;
         // look if pixels are abough a certain threshold then they are centers of a circle
         for(int i = 0; i < input.cols; i++){
             for(int j = 0; j < input.rows; j++){
-                if (H[i][j] > max){
-                    max = H[i][j];
+                if (debug_mode){
+                    if (H[i][j] > max){
+                        // calculate the maximum in the houghspace to set the threshold to a good value
+                        max = H[i][j];
+                    }
                 }
+
                 if (H[i][j] > t){
                     // circle detected
-                    if(debug){
-                        cout << "Circle detected!" << endl;
-                    }
+                    // add the x and y coordinates and the radius of the detected circle to the output vector
                     output.push_back(Vec3f(i,j,r));
                 }
             }
         }
-        cout << "\tDone!" << endl;
+
+        if(debug_mode){
+            cout << "\tDone!" << endl;
+        }
+
         // merge the houghspace to a 2D image
         for(int i = 0; i < input.cols; i++){
             for(int j = 0; j < input.rows; j++){
                 houghspace.at<uchar>(j,i) = houghspace.at<uchar>(j,i) + ( (H[i][j]*r_step_size*3)/(maxRadius-minRadius) );
             }
         }
-        cout << "[DEBUG]: Max value found in the houghspace was '" << max << "'" << endl;
+
+        if (debug_mode){
+            cout << "[DEBUG HOUGHCIRCLE]: Max value found in the houghspace was '" << max << "'" << endl;
+        }
     }
 
+    cout << "[INFO HOUGH]: Progress: " <<  100 << " \%" << endl;
     imwrite("workdir/houghspace.jpg", houghspace);
 
-    cout << "[DEBUG]: Circle detecting for all radius finished!" << endl;
+    if (debug_mode){
+        cout << "[DEBUG HOUGHCIRCLE]: Circle detecting for all radius finished!" << endl;
+    }
+
     return output;
 }
 

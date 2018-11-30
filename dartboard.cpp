@@ -25,6 +25,7 @@ void drawDebugDartboards(vector<Rect> dartboards, vector<Vec3f>circles, Mat imag
 
 String cascade_name = "dartcascade/cascade.xml";
 CascadeClassifier cascade;
+bool debug_mode = false; // enable to get additional debug information on the terminal
 
 int main(int argc, char** argv) {
     cout << "[STATUS]: Hello Circle Detector" << endl;
@@ -56,7 +57,7 @@ int main(int argc, char** argv) {
     Mat sobelX = Mat(gray_image.size(), CV_8U);
     Mat sobelMag = Mat(gray_image.size(), CV_8U);
     Mat sobelDir = Mat(gray_image.size(), CV_8U);
-    sobel(gray_image, sobelX, sobelY, sobelMag, sobelDir);
+    sobel(gray_image, sobelX, sobelY, sobelMag, sobelDir, debug_mode);
     cout << "[STATUS]: Finished Sobel calculation!" << endl;
 
     // threshold the image
@@ -68,7 +69,7 @@ int main(int argc, char** argv) {
     // detect circles
     cout << "[STATUS]: Begin hough transformation..." << endl;
     vector<Vec3f> circles;
-    circles = hough(thresholdSobelMag, sobelDir, 100, image);
+    circles = hough(thresholdSobelMag, sobelDir, 100, image, debug_mode);
     cout << "[STATUS]: Finished hough transformation!" << endl;
 
 	// load the Strong Classifier in a structure called `Cascade'
@@ -140,18 +141,18 @@ std::vector<Rect> detectDartboards( Mat frame )
     return dartboards;
 }
 
-bool rectContainsPoint(Rect db, Point p, bool debug){
+bool rectContainsPoint(Rect db, Point p){
     bool a1 = db.x < p.x; 
     bool a2 = (db.x + db.width) > p.x;
     bool a3 = db.y < p.y;
     bool a4 = (db.y + db.height) > p.y;
     bool a = a1 && a2 && a3 && a4;
-    if (debug){
-    cout << "--------------------" << endl;
-    cout << "a1: " << a1 << "| a2: " << a2 << "| a3: " << a3 << "| a4: " << a4 << endl;
-    cout << "dartboards[i].x: " << db.x << " | dartboards[i].y: " << db.y << endl;
-    cout << "dartboards[i].width: " << db.width << " | dartboards[i].height: " << db.height << endl;
-    cout << "circles[j][0]: " << p.x << " | circles[j][1]: " << p.y << endl;
+    if (debug_mode){
+        cout << "--------------------" << endl;
+        cout << "a1: " << a1 << "| a2: " << a2 << "| a3: " << a3 << "| a4: " << a4 << endl;
+        cout << "dartboards[i].x: " << db.x << " | dartboards[i].y: " << db.y << endl;
+        cout << "dartboards[i].width: " << db.width << " | dartboards[i].height: " << db.height << endl;
+        cout << "circles[j][0]: " << p.x << " | circles[j][1]: " << p.y << endl;
     }
     return a;
 }
@@ -172,11 +173,12 @@ std::vector<cv::Rect> selectDartboards(std::vector<cv::Rect> dartboards, std::ve
          **/
 		bool detected = false;
         for(int j = 0; j < circles.size(); j++){
-            bool a = rectContainsPoint(dartboards[i], Point(circles[j][0], circles[j][1]), false);
-            bool b = rectContainsPoint(dartboards[i], Point(circles[j][0]-circles[j][2], circles[j][1]), false);
-            bool c = rectContainsPoint(dartboards[i], Point(circles[j][0]+circles[j][2], circles[j][1]), false);
-            bool d = rectContainsPoint(dartboards[i], Point(circles[j][0], circles[j][1]-circles[j][2]), false);
-            bool e = rectContainsPoint(dartboards[i], Point(circles[j][0], circles[j][1]+circles[j][2]), false);
+            // check if the circle and the for points (left, right, ...) are inside the rectangle
+            bool a = rectContainsPoint(dartboards[i], Point(circles[j][0], circles[j][1]));
+            bool b = rectContainsPoint(dartboards[i], Point(circles[j][0]-circles[j][2], circles[j][1]));
+            bool c = rectContainsPoint(dartboards[i], Point(circles[j][0]+circles[j][2], circles[j][1]));
+            bool d = rectContainsPoint(dartboards[i], Point(circles[j][0], circles[j][1]-circles[j][2]));
+            bool e = rectContainsPoint(dartboards[i], Point(circles[j][0], circles[j][1]+circles[j][2]));
             if (a && b && c && d && e){
                 detected = true;
                 break;
@@ -264,7 +266,6 @@ std::vector<cv::Rect> mergeDartboards(std::vector<cv::Rect> dartboards){
                 }
                 
             }
-
             // if this is a new rectangle add it to newDartboards vector
             if(!alreadyContains){
                 newDartboards.push_back(dartboards[i]);
