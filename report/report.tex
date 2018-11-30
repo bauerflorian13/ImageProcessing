@@ -7,6 +7,8 @@
 \usepackage{graphicx}
 \usepackage{textcomp}
 \usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{pgfplots}
 %\usepackage[top=30pt,bottom=35pt,left=48pt,right=46pt]{geometry}
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
@@ -25,7 +27,7 @@ ya18048@bristol.ac.uk}
 \IEEEauthorblockA{\textit{School of Computer Science} \\
 \textit{University of Bristol}\\
 Bristol, UK\\
-TODO: insert email}
+TODO: wz18202@bristol.ac.uk}
 }
 
 \maketitle
@@ -88,7 +90,20 @@ ground truth and a test run on any given test image set.
 
 \subsection{TPR calculation}
 
-TODO
+Calculating the true positive rate:
+\[TPR = \frac{TP}{P} = \frac{TP}{TP+FN}\]
+where :\\
+$TPR$ = True positive rate \\
+$TP$ = The number of cases correctly recognised \\
+$P$ = The number of actual positive cases in the data\\
+$FN$ = The number of false negatives, or the number of actual true cases not recognised\\
+
+dart5.jpg TPR = 
+\[\frac{11}{11+0} = 1 \therefore 100\%\]
+dart15.jpg TPR = 
+\[\frac{2}{2+1} = 0.\dot{6} \therefore 66.\dot{6}\%\]
+
+It is always possible to achieve a TPR of 100\% on any detection as 
 
 \newpage
 
@@ -109,6 +124,44 @@ include 4 of them in your report. In tabular form, calculate
 the overall F1 score per image and the average across all
 16 images. Briefly discuss the performance achieved and
 compare it to the level of performance achieved in a).
+
+\begin{tikzpicture}
+
+\pgfplotsset{
+	scale only axis,
+}
+
+\begin{axis}[
+    xmode=log,
+xlabel=$FPR$ in \%,
+ylabel=$TPR$ in \%,
+]
+\addplot[only marks, mark=x]
+coordinates{ % plot 1 data set
+	(100,100)
+	% more points...
+}; \label{training stage 0}
+\addplot[only marks, mark=o]
+coordinates{ % plot 1 data set
+	(3,100)
+	% more points...
+}; \label{training stage 1}
+\addplot[only marks, mark=+]
+coordinates{ % plot 1 data set
+	(0.1,100)
+	% more points...
+}; \label{training stage 2}
+
+% plot 1 legend entry
+\addlegendimage{/pgfplots/refstyle=plot_one}
+\addlegendentry{Training Stage 0}
+\addlegendentry{Training Stage 1}
+\addlegendentry{Training Stage 2}
+\end{axis}
+
+\end{tikzpicture}
+
+As training progresses from stage 0 to 2 we see that the \textit{true positive rate} (TPR) appears to remain constant. This is due to being parametrised with a minimum hit rate of 0.999, essentially ensuring that all dartboards are detected while the algorithm attempts to reduce the number of false positives. We can see that \textit{false positive rate} decreases at an exponential rate between each of the training stages.
 
 \section{Subtask 3}
 

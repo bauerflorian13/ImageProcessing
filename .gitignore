@@ -1,6 +1,7 @@
 # exclude this latex outputs
 *.aux
 *.log
+*.gz
 
 # exclude all images except them needed for the report and in negatives
 *.jpg
