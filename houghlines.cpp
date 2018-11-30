@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include <string>
+#include <cmath>
 #include <opencv2/core.hpp>        //you may need to
 #include <opencv2/highgui.hpp>   //adjust import locations
 #include <opencv2/imgproc.hpp>    //depending on your machine setup
@@ -21,6 +22,11 @@ void hough(Mat grad_mag, Mat grad_orient, int threshold, Mat org);
 vector<Vec2f> houghLinesCalculation(Mat input, int minDist, int angleStep, int maxRadius);
 
 void findIntersections(vector<Vec2f> lines, Mat src);
+
+void hTransform(Mat input);
+
+void convertToMat(vector<Vec2f> input);
+
 
 vector<Vec3f> houghCircleCalculation(Mat input, int minDist, int minRadius, int maxRadius);
 
@@ -58,13 +64,6 @@ int main() {
     cout << "Begin hough transformation..." << endl;
     hough(thresholdSobelMag, sobelDir, 100, image);
     cout << "Finished hough transformation!" << endl;
-    //
-    // sobelX.deallocate();
-    // sobelY.deallocate();
-    // sobelMag.deallocate();
-    // sobelDir.deallocate();
-    // thresholdSobelMag.deallocate();
-
     return 0;
 }
 
@@ -184,24 +183,7 @@ void hough(Mat grad_mag, Mat grad_orient, int threshold, Mat org){
     vector<Vec2f> lines;
     // Apply the Hough Transform to find the circles
     lines = houghLinesCalculation( grad_mag, grad_mag.rows/8, 30, 80 );
-    /*
-    // Draw the circles detected
-    for( size_t i = 0; i < .size(); i++ ) {
-        Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
-        int radius = cvRound(circles[i][2]);
 
-        cout << "Radius is: " << radius << endl;
-        // circle center
-        circle( src, center, 3, Scalar(0,255,0), -1, 8, 0 );
-        // circle outline
-        circle( src, center, radius, Scalar(0,0,255), 3, 8, 0 );
-    }
-    // Show your results
-    cout << "Found " << circles.size() << " circles in the image!" << endl;
-    namedWindow( "Hough Circle Transform Demo", CV_WINDOW_AUTOSIZE );
-    imshow( "Hough Circle Transform Demo", src );
-    */
-    //
     // draw lines
     for( size_t i = 0; i < lines.size(); i++ )
     {
@@ -230,63 +212,65 @@ void hough(Mat grad_mag, Mat grad_orient, int threshold, Mat org){
 }
 
 void findIntersections(vector<Vec2f> lines, Mat src){
+    //Variables used as temp values for point and angle
     int rho1 = 0;
     int rho2 = 0;
     float theta1 = 0;
     float theta2 = 0;
+
     Rect rect(Point(), src.size());
     Point p(290,225);
 
+    //iterate through all lines to find where it is intersected
     for( size_t i = 0; i < lines.size(); i++ )
     {
         float m1, dx1, dy1, c1;
         float intersection_X, intersection_Y;
         float rho1 = lines[i][0], theta1 = lines[i][1];
         Point pt11, pt12;
+
+        //extrapolate 2 points from theta and rho
         double a1 = cos(theta1), b1 = sin(theta1);
         double x01 = a1*rho1, y01 = b1*rho1;
         pt11.x = cvRound(x01 + 1000*(-b1));
         pt11.y = -cvRound(y01 + 1000*(a1));
         pt12.x = cvRound(x01 - 1000*(-b1));
         pt12.y = -cvRound(y01 - 1000*(a1));
-        // cout << "Points on first line:";
-        // cout << "    " << pt11;
-        // cout << "    " << pt12;
 
+        //calculate the gradient and equation of line
         dx1 = pt12.x - pt11.x;
         dy1 = pt12.y - pt11.y;
-
         m1 = dy1 / dx1;
         c1 = pt11.y - m1 * pt11.x;
-        // cout << "m1 : " << m1 << endl;
 
+        //loop to find  lines that cross i
         for( size_t j = 0; j < lines.size(); j++ )
         {
             float m2, dx2, dy2, c2;
             float rho2 = lines[j][0], theta2 = lines[j][1];
             Point pt21, pt22;
+
+            //extrapolate 2 points from theta and rho
             double a2 = cos(theta2), b2 = sin(theta2);
             double x02 = a2*rho2, y02 = b2*rho2;
             pt21.x = cvRound(x02 + 1000*(-b2));
             pt21.y = -cvRound(y02 + 1000*(a2));
             pt22.x = cvRound(x02 - 1000*(-b2));
             pt22.y = -cvRound(y02 - 1000*(a2));
-            // cout << "Points on second line:";
-            // cout << "    " << pt21;
-            // cout << "    " << pt22 << endl;
 
+            //calculate the gradient and equation of line
             dx2 = pt22.x - pt21.x;
             dy2 = pt22.y - pt21.y;
-
             m2 = dy2 / dx2;
             c2 = pt21.y - m2 * pt21.x;
 
-            // cout << "m2 : " << m2 << endl;
 
+            //check if lines are parallel
             if( (m1 - m2) == 0)
               std::cout << "No Intersection between the lines\n";
             else
             {
+                //find point of intersection and draw
                 intersection_X = (c2 - c1) / (m1 - m2);
                 intersection_Y = m1 * intersection_X + c1;
                 std::cout << "Intersecting Point: = ";
@@ -297,138 +281,113 @@ void findIntersections(vector<Vec2f> lines, Mat src){
                 Point p(intersection_X, -intersection_Y);
                 circle( src, p, 2, Scalar(255,0,0), -1, 8, 0);
             }
-
         }
     }
-
-
-
-
-
-
-
-
-
-
-    // for( size_t i = 0; i < lines.size(); i++ )
-    // {
-    //     float rho1 = lines[i][0], theta1 = lines[i][1];
-    //     Point pt11, pt12;
-    //     double a1 = cos(theta2), b1 = sin(theta1);
-    //     double x01 = a1*rho1, y01 = b1*rho1;
-    //     pt11.x = cvRound(x01 + 1000*(-b1));
-    //     pt11.y = cvRound(y01 + 1000*(a1));
-    //     pt12.x = cvRound(x01 - 1000*(-b1));
-    //     pt12.y = cvRound(y01 - 1000*(a1));
-    //     cout << pt11 << endl;
-    //     cout << pt12 << endl;
-    //     // line( org, pt1, pt2, Scalar(0,0,255), 3, CV_AA);
-    //     for (size_t j=0; j < lines.size(); j++){
-    //       float rho2 = lines[j][0], theta2 = lines[j][1];
-    //       Point pt21, pt22;
-    //       double a2 = cos(theta2), b2 = sin(theta2);
-    //       double x02 = a2*rho2, y02 = b2*rho2;
-    //       pt21.x = cvRound(x02 + 1000*(-b2));
-    //       pt21.y = cvRound(y02 + 1000*(a2));
-    //       pt22.x = cvRound(x02 - 1000*(-b2));
-    //       pt22.y = cvRound(y02 - 1000*(a2));
-    //       // cout << pt21 << endl;
-    //       // cout << pt22 << endl;
-    //
-    //       cout << endl;
-    //     }
-    // }
-
-/*
-    for(int i = 0; i<lines.size(); i++){
-
-    //     if (lines[i][1]*(180/CV_PI)>100) {
-    //     cout << lines[i][0] << endl;
-    //     cout << lines[i][1]*(180/CV_PI) << " degrees" << endl;
-    // }
-    //     if (lines[i][1]*(180/CV_PI)<60) {
-    //     cout << lines[i][0] << endl;
-    //     cout << lines[i][1]*(180/CV_PI) << " degrees" << endl;
-    // }
-
-        for(int j = 0; j < lines.size(); j++){
-            // cout << "It " << i << " " << j << endl;
-
-            // Mat line1 = lines[i];
-            // Mat line2 = lines[j];
-            double line1angle = double(lines[i][1]);
-            double line2angle = double(lines[j][1]);
-            double line1yintercept = double(-lines[i][0]);
-            double line2yintercept = double(-lines[j][0]);
-
-            double line1vector[2] = {sin(line1angle), cos(line1angle)};
-            double line2vector[2] = {sin(line2angle), cos(line2angle)};
-
-            Point2f line1p1 (0, line1yintercept);
-            Point2f line1p2 (line1vector[0], line1yintercept+(line1vector[1]));
-            Point2f line2p1 (0, line2yintercept);
-            Point2f line2p2 (line2vector[0], line2yintercept+(line2vector[1]));
-             cout << "  "<< line1p2 << endl;
-            // cout << "  "<< line1p2 << endl;
-            // cout << line1angle << endl;
-            // cout << line1angle*180/CV_PI << endl;
-            //
-            // cout << line1vector[0] << " " << line1vector[1] << endl;
-            //
-            // cout << endl;
-
-
-            Point2f x = line2p1 - line1p1;
-            Point2f d1 = line1p2 - line1p1;
-            Point2f d2 = line2p2 - line2p1;
-
-            float cross = d1.x * d2.y - d1.y * d2.x;
-            if (abs(cross) <(1e-8)) continue;
-
-            double t1 = (x.x * d2.y - x.y * d2.x)/cross;
-            Point2f r = line1p1 + d1 * t1;
-
-            Point p(r.x, -r.y);
-
-            // if (rect.contains(p) && src.at<uchar>(r.y, r.x) ==0){
-                // r.x = cvRound(r.x);
-                // r.y = cvRound(r.y);
-                // if ((r.x<350) & (r.x>250)){
-                // cout << r << endl;
-
-                circle( src, p, 1, Scalar(255,0,0), -1, 8, 0);
-
-                // cout << line1p1 << endl;
-                // cout << line1angle << endl;
-                // cout << line1p2 << endl;
-
-            // }
-
-
-
-
-            // rho1 = lines[i][0];
-            // theta1 = lines[i][1];
-            // rho2 = lines[j][0];
-            // theta2 = lines[j][1];
-            // double matrix = {{cos(theta1), sin(theta1)},{cos(theta2), sin(theta2)}};
-            // double vector = {rho1, rho2};
-            // cout << point << endl;
-
-        }
-
-    }
-    */
 }
 
 vector<Vec2f> houghLinesCalculation(Mat input, int minDist, int minRadius, int maxRadius){
     vector<Vec2f> lines;
+    vector<Vec2f> input1;
+    int output;
     // detect lines
-    HoughLines(input, lines, 1, CV_PI/180, 150, 0, 0 );
-
+    // HoughLines(input, lines, 1, CV_PI/180, 150, 0, 0 );
+    hTransform(input);
+    cout << "hello" << endl;
+    // convertToMat(input1);
     return lines;
   }
 
+void convertToMat(vector<Vec2f> input){
+    cv::Mat accuImage = cv::Mat(input);
+    cout << "Accu" << endl;
+    double minVal;
+    double maxVal;
+    Point minLoc;
+    Point maxLoc;
+
+    // minMaxLoc( accuImage, &minVal, &maxVal, &minLoc, &maxLoc );
+    //imshow("accumulator image", input);
+    cout << input.size() << endl;
+
+    // waitKey(0);
+}
+
+void hTransform(Mat input){
+    //Create accumulator
+
+    int width = input.cols;
+    int height = input.rows;
+    double hough_h = ((sqrt(2.0) * (double)(height>width?height:width)) / 2.0);
+    double _accu_h = hough_h * 2.0; // -r -> +r
+    double _accu_w = 180;
+    double centre_x = width/2;
+    double centre_y = height/2;
+
+    // int abc = ((int) _accu_h*_accu_w);
+    int diag = sqrt(pow(width,2) + pow(height,2));
+    // cout << abc << endl;
+
+    double _accu[diag][180];
+    int _accu1[diag][180];
+
+    cout << diag << endl;
+    cout << sizeof _accu[0] / sizeof(double) << endl;
+    cout << sizeof _accu / sizeof(_accu[0]) << endl;
+    // cout << sizeof(_accu) << endl;
+
+
+
+
+    for (int y = 0; y < height; y++){
+        for (int x = 0; x < width; x++){
+            for (int d=0; d<180; d++){
+                if (input.at<uchar>(y,x)>200) {
+                    for (int theta = 0; theta<180; theta++) {
+                        int p = x * cos(theta-90) + y * sin(theta-90);
+                        _accu[theta][p] += 1;
+                    }
+                }
+            }
+        }
+    }
+    int accuMax = 0;
+    for(int i = 1; i<_accu_h; i++){
+        for (int j=0; j<_accu_w; j++){
+            if (_accu[j][i] > accuMax) {
+                accuMax = _accu[j][i];
+            }
+        }
+    }
+    cout << "Max is " << accuMax << endl;
+    int c = (accuMax/255);
+    cout << "c is " << c << endl;
+    accuMax = 0;
+
+    for(int i = 1; i<_accu_h; i++){
+        for (int j=0; j<_accu_w; j++){
+            _accu1[j][i] = (_accu[j][i])/c;
+            cout << (_accu1[j][i]) << endl;
+            if (_accu1[j][i] > accuMax) {
+                accuMax = _accu1[j][i];
+            }
+
+        }
+    }
+    cout << "Max is " << accuMax << endl;
+    // cv::Mat accuImage = cv::Mat(_accu1);
+    Mat accuImage(diag, 180, DataType<int>::type, _accu1);
+    imshow("accumulator", accuImage);
+    waitKey(0);
+;
+
+
+
+}
+
+
+// vector<Vec2f> thresholdAndFindLines(Mat accu){
+//
+// }
 
 vector<Vec3f> houghCircleCalculation(Mat input, int minDist, int minRadius, int maxRadius){
     vector<Vec3f> output;
