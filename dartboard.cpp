@@ -9,6 +9,8 @@
 #include <string>
 #include "houghcircles.h"
 #include <algorithm>
+#include <cstdio>
+#include <ctime>
 
 using namespace std;
 using namespace cv;
@@ -28,8 +30,14 @@ CascadeClassifier cascade;
 bool debug_mode = false; // enable to get additional debug information on the terminal
 
 int main(int argc, char** argv) {
+    // init clock for benchmarking
+    clock_t start;
+    double duration;
+    start = clock();
+
     cout << "[STATUS]: Hello Circle Detector" << endl;
 
+    // parse arguments to detect viewing mode
     bool viewmode;
     if(argc == 3){
         char c = argv[2][0];
@@ -110,6 +118,9 @@ int main(int argc, char** argv) {
 	prefix = "output_images/detected2_";
 	imwrite( (prefix + filename), image2);
 
+    // end the time for benchmarking
+    duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
+    
     if(viewmode){
         // show the detected dartboards in the end
         imshow("Detected dartboards", image);
@@ -120,7 +131,7 @@ int main(int argc, char** argv) {
         waitKey(0);
     }
 
-    cout << "[STATUS]: Dartboard detection finished!" << endl; 
+    cout << "[STATUS]: Dartboard detection finished! Duration was " << duration << "s."<< endl; 
     return 0;
 }
 
