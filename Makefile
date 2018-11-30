@@ -4,7 +4,7 @@
 
 CC=g++
 
-EXES=dartboard createsamples trainmodel 
+EXES=dartboard createsamples trainmodel face
 
 NUM_OF_IMAGES=1000
 
@@ -16,6 +16,8 @@ dartboard: dartboard.cpp houghcircles.cpp
 houghlines: houghlines.cpp
 	$(CC) -o $@ $^ `pkg-config opencv --cflags --libs`
 
+face: face.cpp
+	$(CC) -o $@ $^ `pkg-config opencv --cflags --libs`
 
 createsamples: dart.bmp
 	opencv_createsamples -img dart.bmp -vec dart.vec -neg negatives.dat -w 20 -h 20 -num $(NUM_OF_IMAGES) -maxidev 80 -maxxangle 0.8 -maxyangle 0.8 -maxzangle 0.2
@@ -27,7 +29,9 @@ trainmodel: dart.vec
 
 clean:
 	\rm dartboard
+	\rm houghlines
 	\rm dart.vec
+	\rm face
 	\rm -r dartcascade/*
 	\rm -r output_images/*
 	\rm -r workdir/*
