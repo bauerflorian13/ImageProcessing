@@ -27,7 +27,7 @@ String cascade_name = "dartcascade/cascade.xml";
 CascadeClassifier cascade;
 
 int main(int argc, char** argv) {
-    cout << "Hello Circle Detector" << endl;
+    cout << "[STATUS]: Hello Circle Detector" << endl;
 
     bool viewmode;
     if(argc == 3){
@@ -36,67 +36,68 @@ int main(int argc, char** argv) {
     }else{
         viewmode = true;
     }
-    cout << "View mode is '" << viewmode << "'" << endl;
+    cout << "[STATUS]: View mode is '" << viewmode << "'" << endl;
 
     // input image
     String input_filename = argv[1];
     input_filename = "input_images/" + input_filename;
     Mat image = imread(input_filename, 1);
-    cout << "Loaded image '" << input_filename << "' from input_images directory as input file." << endl;
+    cout << "[STATUS]: Loaded image '" << input_filename << "' from input_images directory as input file." << endl;
 
     // Convert to gray scale
     Mat gray_image;
     cvtColor(image, gray_image, CV_BGR2GRAY);
     imwrite("workdir/gray_img.jpg", gray_image);
-    cout << "Converted image to gray scale image." << endl;
+    cout << "[STATUS]: Converted image to gray scale image." << endl;
 
     // Sobel filter
-    cout << "Begin Sobel filter calculation..." << endl;
+    cout << "[STATUS]: Begin Sobel filter calculation..." << endl;
     Mat sobelY = Mat(gray_image.size(), CV_8U);
     Mat sobelX = Mat(gray_image.size(), CV_8U);
     Mat sobelMag = Mat(gray_image.size(), CV_8U);
     Mat sobelDir = Mat(gray_image.size(), CV_8U);
     sobel(gray_image, sobelX, sobelY, sobelMag, sobelDir);
-    cout << "Finished Sobel calculation!" << endl;
+    cout << "[STATUS]: Finished Sobel calculation!" << endl;
 
-    cout << "Begin thresholding sobelMag image..." << endl;
+    // threshold the image
+    cout << "[STATUS]: Begin thresholding sobelMag image..." << endl;
     Mat thresholdSobelMag = Mat(gray_image.size(), CV_8U);
     thresholdX(sobelMag, thresholdSobelMag, 100);
-    cout << "Finished thresholding sobelMag image!" << endl;
+    cout << "[STATUS]: Finished thresholding sobelMag image!" << endl;
 
     // detect circles
-    cout << "Begin hough transformation..." << endl;
+    cout << "[STATUS]: Begin hough transformation..." << endl;
     vector<Vec3f> circles;
     circles = hough(thresholdSobelMag, sobelDir, 100, image);
-    cout << "Finished hough transformation!" << endl;
+    cout << "[STATUS]: Finished hough transformation!" << endl;
 
 	// load the Strong Classifier in a structure called `Cascade'
-    cout << "Start loading classifier structure..." << endl;
+    cout << "[STATUS]: Start loading classifier structure..." << endl;
 	if( !cascade.load( cascade_name ) ){ printf("--(!)Error loading\n"); return -1; };
-    cout << "Finished loading classifier structure!" << endl;
+    cout << "[STATUS]: Finished loading classifier structure!" << endl;
 
     // detect dartboards
-    cout << "Start dartboard detection...!" << endl;
+    cout << "[STATUS]: Start dartboard detection...!" << endl;
 	vector<Rect> dartboards;
     dartboards = detectDartboards(image);
-    cout << "Finished dartboard detection!" << endl;
+    cout << "[STATUS]: Finished dartboard detection!" << endl;
 
     // remove false dartboards
-    cout << "Match detected dartboards with detected circles...!" << endl;
+    cout << "[STATUS]: Match detected dartboards with detected circles...!" << endl;
     vector<Rect> dartboards2;
     dartboards2 = dartboards;
     dartboards = selectDartboards(dartboards, circles);
-    cout << "Finished dartboard selection!" << endl;
+    cout << "[STATUS]: Finished dartboard selection!" << endl;
 
     // merge overlapping dartboards together
     dartboards =  mergeDartboards(dartboards);
     
     // draw dartboards on the image
-    cout << "Start drawing dartboards on the image...!" << endl;
+    cout << "[STATUS]: Start drawing dartboards on the image...!" << endl;
     Mat image2 = image.clone();
     drawDartboards(dartboards, image);
     drawDebugDartboards(dartboards2, circles, image2);
-    cout << "Finished drawing dartboards!" << endl;    
+    cout << "[STATUS]: Finished drawing dartboards!" << endl;    
 
 	// Save Result Image
 	string prefix = "output_images/detected_";
@@ -118,6 +119,7 @@ int main(int argc, char** argv) {
         waitKey(0);
     }
 
+    cout << "[STATUS]: Dartboard detection finished!" << endl; 
     return 0;
 }
 
@@ -178,11 +180,9 @@ std::vector<cv::Rect> selectDartboards(std::vector<cv::Rect> dartboards, std::ve
             if (a && b && c && d && e){
                 detected = true;
                 break;
-                //cout << "Found matching dartboard!" << endl;
             }
         }
         if (detected){
-            cout << "Detected!" << endl;
             matchedDartboards.push_back(dartboards[i]);
         }
     }
@@ -199,11 +199,19 @@ void drawDartboards(vector<Rect> dartboards, Mat image){
 	}
 }
 
-//TODO: implement this or fix the code below
+// check if two rectangles have the same size
+bool equalSize(Rect a, Rect b){
+    bool equal1 = a.x == b.x;
+    bool equal2 = a.y == b.y;
+    bool equal3 = a.width == b.width;
+    bool equal4 = a.height == b.height;
+    return equal1 && equal2 && equal3 && equal4;
+}
+
+// merge overlapping dartboards
 std::vector<cv::Rect> mergeDartboards(std::vector<cv::Rect> dartboards){
-    /*vector<Rect> newDartboards;
     vector<Rect> mergedDartboards;
-    bool anychange = false;
+    vector<Rect> newDartboards;
     for(int i = 0; i < dartboards.size(); i++ )
 	{
 		for(int k = 0; k < dartboards.size(); k++ )
@@ -211,34 +219,67 @@ std::vector<cv::Rect> mergeDartboards(std::vector<cv::Rect> dartboards){
             if (i == k){
                 continue;
             }
-            bool acontb = dartboards[i].contains(Point(dartboards[k].x, dartboards[k].y));
-            //bool bconta = dartboards[k].contains(Point(dartboards[i].x, dartboards[i].y));
-            if (acontb){
-                Rect r;
-                r = Rect((int) dartboards[i].x, (int) dartboards[i].y, 
-                (int) dartboards[k].x + dartboards[k].width - dartboards[i].x, 
-                (int) dartboards[k].y + dartboards[k].height - dartboards[i].y);
+            bool contains1 = dartboards[i].contains(Point(dartboards[k].x, dartboards[k].y));
+            bool contains2 = dartboards[i].contains(Point(dartboards[k].x + dartboards[k].width, dartboards[k].y));
+            bool overlapping = contains1 || contains2;
 
+            if (overlapping){
+                Rect r;
+                int minX = dartboards[k].x < dartboards[i].x ? dartboards[k].x : dartboards[i].x;
+                int minY = dartboards[k].y < dartboards[i].y ? dartboards[k].y : dartboards[i].y;
+                int maxX = (dartboards[k].x + dartboards[k].width) > (dartboards[i].x + dartboards[i].width) ? (dartboards[k].x + dartboards[k].width) : (dartboards[i].x + dartboards[i].width) ; 
+                int maxY = (dartboards[k].y + dartboards[k].height) > (dartboards[i].y + dartboards[i].height) ? (dartboards[k].y + dartboards[k].height) : (dartboards[i].y + dartboards[i].height) ;
+                
+                r = Rect(minX, minY, maxX-minX, maxY-minY);
+                // check if a rectangle with the same dimensions is already part of newDartboards
+                bool alreadyContains = false;
+                for (int n = 0; n < newDartboards.size(); n++){
+                    if (equalSize(newDartboards[n], r)){
+                        alreadyContains = true;
+                        break;
+                    }
+                    
+                }
+
+                // if this is a new rectangle add it to newDartboards vector
+                if(!alreadyContains){
                 newDartboards.push_back(r);
-                // cout << "HELLLLOOO!" << endl;
-                anychange = true;
+                }
                 mergedDartboards.push_back(dartboards[i]);
                 mergedDartboards.push_back(dartboards[k]);
             }
         }
     }
 
-    for(int i = 0; i < dartboards.size(); i++){
-        if(!count(mergedDartboards.begin(), mergedDartboards.end(), dartboards[i])){
-            newDartboards.push_back(dartboards[i]);
+    // add all not merged dartboards
+    for (int i = 0; i < dartboards.size(); i++){
+        if (! (find(mergedDartboards.begin(), mergedDartboards.end(), dartboards[i]) != mergedDartboards.end()) ){
+            bool alreadyContains = false;
+            for (int n = 0; n < newDartboards.size(); n++){
+                if (equalSize(newDartboards[n], dartboards[i])){
+                    alreadyContains = true;
+                    break;
+                }
+                
+            }
+
+            // if this is a new rectangle add it to newDartboards vector
+            if(!alreadyContains){
+                newDartboards.push_back(dartboards[i]);
+            }
         }
     }
-    if (anychange){
-        cout << newDartboards.size() << endl;
+
+    // repeat recursively
+    if (newDartboards != dartboards){
         return mergeDartboards(newDartboards);
-    }*/
-    return dartboards;
-    //return newDartboards;
+    }
+
+    // write the number of merged dartboards to the console
+    cout << "[INFO]: Found " << newDartboards.size() << " dartboards after merging phase!" << endl;
+
+    // return dartboards;
+    return newDartboards;
 }
 
 void drawDebugDartboards(vector<Rect> dartboards, vector<Vec3f>circles, Mat image){
