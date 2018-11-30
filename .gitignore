@@ -6,7 +6,7 @@
 # exclude all images except them needed for the report and in negatives
 *.jpg
 !negatives/*.jpg
-!report/img/*.jpg
+!report/img/*/*.jpg
 !input_images/*.jpg
 
 # exclude all compiled executables. Compile them by your own
