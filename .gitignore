@@ -9,6 +9,7 @@
 !report/img/*/*.jpg
 !input_images/*.jpg
 
+
 # exclude all compiled executables. Compile them by your own
 dartboard
 face
@@ -18,4 +19,4 @@ newhough
 # exclude all model files. Again, build it by your own from sources
 *.xml
 *.vec
-
+!frontalface.xml

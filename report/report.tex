@@ -9,12 +9,14 @@
 \usepackage{textcomp}
 \usepackage{xcolor}
 \usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
+
 \usepackage{pgfplots}
 %\usepackage[top=30pt,bottom=35pt,left=48pt,right=46pt]{geometry}
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \begin{document}
-
+\begin{titlepage}
 \title{Report: Image Processing and Computer Vision 2018}
 
 \author{
@@ -30,66 +32,47 @@ ya18048@bristol.ac.uk}
 Bristol, UK\\
 wz18202@bristol.ac.uk}
 }
-
 \maketitle
+\end{titlepage}
 
-\begin{abstract}TODO: Write an abstract or remove it later.
-\end{abstract}
+
 
 \section{Subtask 1}
 
-The First Page of your Report (strict limit):\\
-a) Annotate the test images to generate ground truth, then
-test the face detector’s performance (with the given
-parameters as provided by face.cpp) on five given example
-images: dart4.jpg, dart5.jpg, dart13.jpg, dart14.jpg and
-dart15.jpg. Produce the five result images with bounding
-boxes drawn around detected face candidates and include
-them in your report. \\
-b) Calculate and note in your report the TPR (true positive
-rate) for the images dart5.jpg and dart15.jpg, that is the
-fraction of successfully detected faces out of all valid faces
-in an image. Discuss in your team and briefly note in your
-report 1) some practical difficulties in assessing the TPR
-accurately, 2) why it is always possible to achieve a TPR of
-100\% on any detection task, and 3) implement a small
-piece of code to calculate the F1-score of your face
-detection system accurately and meaningfully from
-ground truth and a test run on any given test image set.
+\subsection{Result Images}
 
-\subsection{Face detection}
 
 \begin{figure}[ht!]
 \centering
 \includegraphics[width=60mm]{img/Viola_Jones_Faces/face_detection4.jpg}
-\caption{Image face4.jpg \label{img_face_4}}
+\caption{Image face4.jpg | $F1 = 100\%$ \label{img_face_4}}
 \end{figure}
 
 \begin{figure}[ht!]
 \centering
 \includegraphics[width=60mm]{img/Viola_Jones_Faces/face_detection5.jpg}
-\caption{Image face5.jpg \label{img_face_5}}
+\caption{Image face5.jpg | $F1 = 88\%$ \label{img_face_5}}
 \end{figure}
 
 \begin{figure}[ht!]
 \centering
 \includegraphics[width=60mm]{img/Viola_Jones_Faces/face_detection13.jpg}
-\caption{Image face13.jpg \label{img_face_13}}
+\caption{Image face13.jpg | $F1 = 66.67\%$ \label{img_face_13}}
 \end{figure}
 
 \begin{figure}[ht!]
 \centering
 \includegraphics[width=60mm]{img/Viola_Jones_Faces/face_detection14.jpg}
-\caption{Image face14.jpg \label{img_face_14}}
+\caption{Image face14.jpg | $F1 = 50\%$ \label{img_face_14}}
 \end{figure}
 
 \begin{figure}[ht!]
 \centering
 \includegraphics[width=60mm]{img/Viola_Jones_Faces/face_detection15.jpg}
-\caption{Image face15.jpg \label{img_face_15}}
+\caption{Image face15.jpg | $F1 = 57.14\%$ \label{img_face_15}}
 \end{figure}
 
-\subsection{TPR calculation}
+\subsection{TPR and F1-score calculation}
 
 Calculating the true positive rate:
 \[TPR = \frac{TP}{P} = \frac{TP}{TP+FN}\]
@@ -100,32 +83,29 @@ $P$ = The number of actual positive cases in the data\\
 $FN$ = The number of false negatives, or the number of actual true cases not recognised\\
 
 dart5.jpg TPR = 
-\[\frac{11}{11+0} = 1 \therefore 100\%\]s
+\[\frac{11}{11+0} = 1 \therefore 100\%\]
+
 dart15.jpg TPR = 
 \[\frac{2}{2+1} = 0.\dot{6} \therefore 66.\dot{6}\%\]
 
-It is always possible to achieve a TPR of 100\% on any detection as 
+
+The TPR is independent of the false positive rate. Consider a face detection task where we have $x$ faces to detect $(A = \{face_{1} \ldots face_{x}\}$ and a hypothetical model that produces a set of detected faces $B$ comprised of all y possible contiguous combinations of pixel areas. $A \subset B$, however it also contains $y-x$ false positive detections. In this case the model has a TPR of 100\%, however a potentially much lower precision. This hypothetical model is always possible, regardless of input, therefore a TPR of 100\% is always possible.
+
+
+
+$$F_{1} = \left(\frac{TPR{-1} \cdot PRECISION^{-1}}{2} \right) ^{-1}$$
+$$= 2 \cdot \frac{PRECISION \cdot TPR}{PRECISION + TPR}$$
+$$ PRECISION = \frac{TP}{TP + FP}$$
+where :
+$FP$ = False positive rate
 
 \newpage
 
 \section{Subtask 2}
 
-The Second Page of your Report (strict limit):\\
-a) The training tool produces a strong classifier in stages. Per
-stage the tool adds further features to the classifier and
-prints the achieved TPR and FPR (false positive rate) for
-that point on the training data (see Figure). Collate this
-information into a scatter plot that plots TPR vs FPR on the
-training data for the three different stages. Produce this
-graph in your report and briefly interpret what it shows.\\
-b) Test the dartboard detector’s performance on all given
-example images. Produce the result images with bounding
-boxes drawn around detected dartboard candidates and
-include 4 of them in your report. In tabular form, calculate
-the overall F1 score per image and the average across all
-16 images. Briefly discuss the performance achieved and
-compare it to the level of performance achieved in a).
+\subsection{TPR vs FPR Scatter Plot}
 
+\begin{center}
 \begin{tikzpicture}
 
 \pgfplotsset{
@@ -161,10 +141,11 @@ coordinates{ % plot 1 data set
 \end{axis}
 
 \end{tikzpicture}
+\end{center}
 
 As training progresses from stage 0 to 2 we see that the \textit{true positive rate} (TPR) appears to remain constant. This is due to being parametrised with a minimum hit rate of 0.999, essentially ensuring that all dartboards are detected while the algorithm attempts to reduce the number of false positives. We can see that \textit{false positive rate} decreases at an exponential rate between each of the training stages.
 
-B
+\subsection{F1-Scores for Dartboards}
 
 \begin{figure}[ht!]
 	\centering
@@ -190,28 +171,151 @@ B
 	\caption{Image dart10.jpg \label{img_dart_10}}
 \end{figure}
 
+\begin{center}
+	\begin{tabular}{| l | l | l | l |}
+		\hline
+		Image & F1-Score \\ \hline
+	    0 & 100\% \\ \hline
+		1 & 100\% \\ \hline
+		2 & 33.33\% \\ \hline
+		3 &  50\%\\ \hline
+		4 & 50\% \\ \hline
+		5 & 100\% \\ \hline
+		6 & 66.67\% \\ \hline
+		7 & 28.57\% \\ \hline
+		8 & 66.67\% \\ \hline
+		9 & 66.67\% \\ \hline
+		10 & 42.86\% \\ \hline
+		11 & 0\% \\ \hline
+		12 & 66.67\% \\ \hline
+		13 & 66.67\% \\ \hline
+		14 & 44.44\% \\ \hline
+		15 & 100\% \\ \hline
+		average & 61.32\% \\ \hline
+	\end{tabular}
+\end{center}
+
+TODO: DISCUSSION OF PERFORMANCE ACHIEVED
+
+\newpage
 
 \section{Subtask 3}
 
-The Third Page of your Report (strict limit):\\
-a) Show in your report for two of the given example dart
-images which best exhibit the merit and limitations of your
-implementation: 1) the thresholded gradient magnitude
-image used as input to the Hough Transform, 2) a 2D
-representation of the Hough Space, 3) the result images
-showing final detections using bounding boxes.\\
-b) Evaluate your detector on all of the example images.
-Provide the F1-score of overall detection performance for
-the set of example test images in a table. Document your
-overall detection results (for instance by using
-precision/recall measures) and briefly note in bullet points
-the key merits and shortcomings of your implementation.\\
-c) In a flow diagram, depict how you have combined
-evidence from the Hough Transform and Viola-Jones
-detector. In bullet points, explain briefly your rationale
-behind the way you have combined evidence.
+\subsection{Images for Hough Space, Gradient Magnitude, and Final Result}
 
+\begin{figure}[ht!]
+	\centering
+	\includegraphics[width=60mm]{img/Hough_Space_and_Threshold/houghspace.jpg}
+	\caption{Hough Space for image dart13.jpg \label{img_dart_1}}
+\end{figure}
+
+\begin{figure}[ht!]
+	\centering
+	\includegraphics[width=60mm]{img/Hough_Space_and_Threshold/threshold.jpg}
+	\caption{Thresholded Gradient Magnitude for image dart13.jpg \label{img_dart_1}}
+\end{figure}
+
+\begin{figure}[ht!]
+	\centering
+	\includegraphics[width=60mm]{img/Hough_Space_and_Threshold/houghspace2.jpg}
+	\caption{Hough Space for image dart10.jpg \label{img_dart_1}}
+\end{figure}
+
+\begin{figure}[ht!]
+	\centering
+	\includegraphics[width=60mm]{img/Hough_Space_and_Threshold/threshold2.jpg}
+	\caption{Thresholded Gradient Magnitude for image dart10.jpg \label{img_dart_1}}
+\end{figure}
+
+\begin{figure}[ht!]
+	\centering
+	\includegraphics[width=60mm]{img/Task3_Images/detected_dart13.jpg}
+	\caption{Final Detections for image dart13.jpg \label{img_dart_1}}
+\end{figure}
+
+\begin{figure}[ht!]
+	\centering
+	\includegraphics[width=60mm]{img/Task3_Images/detected_dart10.jpg}
+	\caption{Final Detections for image dart10.jpg \label{img_dart_1}}
+\end{figure}
+
+\subsection{Evaluation of Detector}
+
+\begin{center}
+	\begin{tabular}{| l | l | l | l |}
+		\hline
+		Image & F1-Score & Precision & Recall \\ \hline
+		0 & 100\% & 100\% & 100\% \\ \hline
+		1 & 100\% & 100\% & 100\% \\ \hline
+		2 & 100\% & 100\% & 100\% \\ \hline
+		3 &  0\% & 0\% & 0\% \\ \hline
+		4 & 66.67\% & 50\% & 100\% \\ \hline
+		5 & 100\% & 100\% & 100\% \\ \hline
+		6 & 100\%  & 100\% & 100\% \\ \hline
+		7 & 50\% & 33.33\% & 100\%\\ \hline
+		8 & 100\% & 100\% & 100\% \\ \hline
+		9 & 100\% & 100\% & 100\% \\ \hline
+		10 & 85.71\% & 75\% & 100\% \\ \hline
+		11 & 0\% & 0\% & 0\% \\ \hline
+		12 & 100\% & 100\% & 100\% \\ \hline
+		13 & 66.67\% & 50\% & 100\% \\ \hline
+		14 & 57.14\% & 40\% & 100\% \\ \hline
+		15 & 100\% & 100\% & 100\%\\ \hline
+		average & 76.60\% & 71.77\% & 87.5\% \\ \hline
+	\end{tabular}
+\end{center}
+
+\begin{itemize}
+	\item[+] False positive rate strongly decreases due to a requirement of a positive from both \textbf{Viola-Jones}, and \textbf{Hough Circle Detection}
+	\item[+] There is an improvement of 16 percentage points over regular Viola-Jones (A \texttildelow 25\% improvement).
+	\item[-] A small number of false negatives was introduced (Viola-Jones produced 0 false negatives)
+	\item[-] Like Viola-Jones, overlapping detection rectangles result in an increase in the false positive rate.
+\end{itemize}
+
+\subsection{Evidence of Combined Hough Transform and Viola-Jones}
+
+\tikzstyle{decision} = [diamond, draw, fill=blue!20, 
+text width=4.5em, text badly centered, node distance=3cm, inner sep=0pt]
+\tikzstyle{block} = [rectangle, draw, fill=blue!20, 
+text width=5em, text centered, rounded corners, minimum height=4em]
+\tikzstyle{line} = [draw, -latex']
+\tikzstyle{cloud} = [draw, ellipse,fill=red!20, node distance=3cm,
+minimum height=2em]
+
+\begin{tikzpicture}[node distance = 2cm, auto]
+	    \node [block] (ViolaJones) {ViolaJones};
+	    \node [cloud, left of=ViolaJones] (Train) {Training Data};
+	    \node [cloud, right of=ViolaJones] (Input) {Input Image};
+	    \node [block, below of=ViolaJones] (Model) {Combined Model};
+        \node [block, right of=Model] (Hough) {Hough Circle Detector};
+        \node [cloud, below of=Model] (Output) {Detected Dart Boards};
+        \path [line] (ViolaJones) -- (Model);
+        \path [line] (Model) -- (Output);
+        \path [line] (Hough) -- (Model);
+        \path [line,dashed] (Train) -- (ViolaJones);
+        \path [line,dashed] (Input) -- (ViolaJones);
+        \path [line,dashed] (Input) -- (Hough);
+	    
+\end{tikzpicture}
+
+\begin{itemize}
+	\item Viola-Jones is first trained using the training data as input.
+	\item Viola-Jones receives an test image as input and returns detected dart boards.
+	\item The Hough Circle Detector receives the same input image and returns detected circles.
+	\item All detected dart boards are cross referenced against the Hough Detector's circles.
+	\item If a Viola-Jones detected board contains no circle it is disregarded as a false positive.
+	\item Conversely, if the board contains one or more circles the Viola-Jones prediction is considered to have been confirmed.
+	\item The decision to confirm Viola-Jones using detected Hough circles and not vice versa is due to the following: 
+	\begin{itemize}
+		\item Viola-Jones has a comparatively lower false positive rate.
+		\item Viola-Jones has a near 100\% true positive rate
+	\end{itemize}
+\end{itemize}
+
+\newpage
 \section{Subtask 4}
+
+
 
 The Forth Page of your Report (strict limit):\\
 a) In bullet points, explain briefly your rationale behind
@@ -224,5 +328,37 @@ show the improvements in F1-score. Document your
 overall detection results and briefly note in bullet points
 the key merits and shortcomings of your final
 implementation.
+
+\subsection{Rationale}
+\begin{itemize}
+	\item 
+\end{itemize}
+
+\subsection{Images showing aspects of the final technique}
+
+\subsection{Final F1-Scores}
+\begin{center}
+	\begin{tabular}{| l | l | l | l |}
+		\hline
+		Image & F1-Score & Precision & Recall \\ \hline
+		0 & 100\% & 100\% & 100\% \\ \hline
+		1 & 100\% & 100\% & 100\% \\ \hline
+		2 & 100\% & 100\% & 100\% \\ \hline
+		3 &  0\% & 0\% & 0\% \\ \hline
+		4 & 100\% & 100\% & 100\% \\ \hline
+		5 & 100\% & 100\% & 100\% \\ \hline
+		6 & 100\%  & 100\% & 100\% \\ \hline
+		7 & 100\% & 100\% & 100\%\\ \hline
+		8 & 100\% & 100\% & 100\% \\ \hline
+		9 & 66.67\% & 50\% & 100\% \\ \hline
+		10 & 100\% & 100\% & 100\% \\ \hline
+		11 & 0\% & 0\% & 0\% \\ \hline
+		12 & 100\% & 100\% & 100\% \\ \hline
+		13 & 100\% & 100\% & 100\% \\ \hline
+		14 & 66.67\% & 50\% & 100\% \\ \hline
+		15 & 100\% & 100\% & 100\%\\ \hline
+		average & 83.33\% & 81.25\% & 87.5\% \\ \hline
+	\end{tabular}
+\end{center}
 
 \end{document}
