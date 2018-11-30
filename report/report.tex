@@ -5,6 +5,7 @@
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{algorithmic}
 \usepackage{graphicx}
+\usepackage{graphics}
 \usepackage{textcomp}
 \usepackage{xcolor}
 \usepackage{tikz}
@@ -27,7 +28,7 @@ ya18048@bristol.ac.uk}
 \IEEEauthorblockA{\textit{School of Computer Science} \\
 \textit{University of Bristol}\\
 Bristol, UK\\
-TODO: wz18202@bristol.ac.uk}
+wz18202@bristol.ac.uk}
 }
 
 \maketitle
@@ -60,32 +61,32 @@ ground truth and a test run on any given test image set.
 
 \begin{figure}[ht!]
 \centering
-\includegraphics[width=60mm]{img/detected_dart4.jpg}
-\caption{Image dart4.jpg \label{img_face_4}}
+\includegraphics[width=60mm]{img/Viola_Jones_Faces/face_detection4.jpg}
+\caption{Image face4.jpg \label{img_face_4}}
 \end{figure}
 
 \begin{figure}[ht!]
 \centering
-\includegraphics[width=60mm]{img/detected_dart5.jpg}
-\caption{Image dart5.jpg \label{img_face_5}}
+\includegraphics[width=60mm]{img/Viola_Jones_Faces/face_detection5.jpg}
+\caption{Image face5.jpg \label{img_face_5}}
 \end{figure}
 
 \begin{figure}[ht!]
 \centering
-\includegraphics[width=60mm]{img/detected_dart13.jpg}
-\caption{Image dart13.jpg \label{img_face_13}}
+\includegraphics[width=60mm]{img/Viola_Jones_Faces/face_detection13.jpg}
+\caption{Image face13.jpg \label{img_face_13}}
 \end{figure}
 
 \begin{figure}[ht!]
 \centering
-\includegraphics[width=60mm]{img/detected_dart14.jpg}
-\caption{Image dart14.jpg \label{img_face_14}}
+\includegraphics[width=60mm]{img/Viola_Jones_Faces/face_detection14.jpg}
+\caption{Image face14.jpg \label{img_face_14}}
 \end{figure}
 
 \begin{figure}[ht!]
 \centering
-\includegraphics[width=60mm]{img/detected_dart15.jpg}
-\caption{Image dart15.jpg \label{img_face_15}}
+\includegraphics[width=60mm]{img/Viola_Jones_Faces/face_detection15.jpg}
+\caption{Image face15.jpg \label{img_face_15}}
 \end{figure}
 
 \subsection{TPR calculation}
@@ -99,7 +100,7 @@ $P$ = The number of actual positive cases in the data\\
 $FN$ = The number of false negatives, or the number of actual true cases not recognised\\
 
 dart5.jpg TPR = 
-\[\frac{11}{11+0} = 1 \therefore 100\%\]
+\[\frac{11}{11+0} = 1 \therefore 100\%\]s
 dart15.jpg TPR = 
 \[\frac{2}{2+1} = 0.\dot{6} \therefore 66.\dot{6}\%\]
 
@@ -162,6 +163,33 @@ coordinates{ % plot 1 data set
 \end{tikzpicture}
 
 As training progresses from stage 0 to 2 we see that the \textit{true positive rate} (TPR) appears to remain constant. This is due to being parametrised with a minimum hit rate of 0.999, essentially ensuring that all dartboards are detected while the algorithm attempts to reduce the number of false positives. We can see that \textit{false positive rate} decreases at an exponential rate between each of the training stages.
+
+B
+
+\begin{figure}[ht!]
+	\centering
+	\includegraphics[width=60mm]{img/Viola_Jones_Darts/detected_dart1.jpg}
+	\caption{Image dart1.jpg \label{img_dart_1}}
+\end{figure}
+
+\begin{figure}[ht!]
+	\centering
+	\includegraphics[width=60mm]{img/Viola_Jones_Darts/detected_dart2.jpg}
+	\caption{Image dart2.jpg \label{img_dart_2}}
+\end{figure}
+
+\begin{figure}[ht!]
+	\centering
+	\includegraphics[width=60mm]{img/Viola_Jones_Darts/detected_dart5.jpg}
+	\caption{Image dart5.jpg \label{img_dart_5}}
+\end{figure}
+
+\begin{figure}[ht!]
+	\centering
+	\includegraphics[width=60mm]{img/Viola_Jones_Darts/detected_dart10.jpg}
+	\caption{Image dart10.jpg \label{img_dart_10}}
+\end{figure}
+
 
 \section{Subtask 3}
 
