@@ -221,7 +221,9 @@ std::vector<cv::Rect> mergeDartboards(std::vector<cv::Rect> dartboards){
             }
             bool contains1 = dartboards[i].contains(Point(dartboards[k].x, dartboards[k].y));
             bool contains2 = dartboards[i].contains(Point(dartboards[k].x + dartboards[k].width, dartboards[k].y));
-            bool overlapping = contains1 || contains2;
+            bool contains3 = dartboards[i].contains(Point(dartboards[k].x, dartboards[k].y + dartboards[k].height));
+            bool contains4 = dartboards[i].contains(Point(dartboards[k].x + dartboards[k].width, dartboards[k].y + dartboards[k].height));
+            bool overlapping = contains1 || contains2 || contains3 || contains4;
 
             if (overlapping){
                 Rect r;
