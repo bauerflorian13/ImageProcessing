@@ -72,15 +72,15 @@ int main( int argc, const char** argv )
 	imwrite( (prefix + filename) , frame );
 
 	// formula for calculation F1 score: 2 * (precision * recall) / (precision + recall)
-	int true_positives = num_of_expected_faces;
-	int false_positives = num_of_detected_faces - num_of_expected_faces;
-	int false_negatives = 0; // this is just an assumption
-	int precision = true_positives / (true_positives + false_positives);
-	int recall = true_positives / (true_positives + false_negatives);
+	double true_positives = num_of_expected_faces;
+	double false_positives = num_of_detected_faces - num_of_expected_faces;
+	double precision = true_positives / (true_positives + false_positives);
+	double false_negatives = 0; // this is just an assumption
+	double recall = true_positives / (true_positives + false_negatives);
 
-	int f1_score = 2 * (precision * recall) / (precision + recall);
+	double f1_score = 100 * 2 * (precision * recall) / (precision + recall);
 
-	cout << "Calculated F1 Score is " << f1_score << "!" << endl;
+	cout << "Calculated F1 Score is " << f1_score << "\%!" << endl;
 	return 0;
 }
 
