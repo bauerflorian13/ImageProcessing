@@ -9,33 +9,32 @@
 \usepackage{textcomp}
 \usepackage{xcolor}
 \usepackage{tikz}
+
 \usetikzlibrary{shapes,arrows}
 
 \usepackage{pgfplots}
-%\usepackage[top=30pt,bottom=35pt,left=48pt,right=46pt]{geometry}
+%\usepackage[top=30pt,bottom=40pt,left=46pt,right=48pt]{geometry}
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
 \begin{document}
 \begin{titlepage}
-\title{Report: Image Processing and Computer Vision 2018}
-
-\author{
-\IEEEauthorblockN{Florian Bauer}
-\IEEEauthorblockA{\textit{School of Computer Science} \\
-\textit{University of Bristol}\\
-Bristol, UK\\
-ya18048@bristol.ac.uk}
-\and
-\IEEEauthorblockN{Ruben Powar}
-\IEEEauthorblockA{\textit{School of Computer Science} \\
-\textit{University of Bristol}\\
-Bristol, UK\\
-wz18202@bristol.ac.uk}
-}
-\maketitle
+	\title{Report: Image Processing and Computer Vision 2018}
+  	\author{\IEEEauthorblockN{Florian Bauer}
+			\IEEEauthorblockA{\textit{School of Computer Science} \\
+			\textit{University of Bristol}\\
+					Bristol, UK\\
+					ya18048@bristol.ac.uk}
+			\and
+			\IEEEauthorblockN{Ruben Powar}
+			\IEEEauthorblockA{\textit{School of Computer Science} \\
+			\textit{University of Bristol}\\
+			Bristol, UK\\
+			wz18202@bristol.ac.uk}
+			}
+			\maketitle
 \end{titlepage}
-
-
+\newpage
 
 \section{Subtask 1}
 
@@ -106,41 +105,37 @@ $FP$ = False positive rate
 \subsection{TPR vs FPR Scatter Plot}
 
 \begin{center}
-\begin{tikzpicture}
+	\begin{tikzpicture}
+		\pgfplotsset{
+			scale only axis,
+		}
 
-\pgfplotsset{
-	scale only axis,
-}
+		\begin{axis}[
+			xmode=log,
+		xlabel=$FPR$ in \%,
+		ylabel=$TPR$ in \%,
+		]
+		\addplot[only marks, mark=x]
+		coordinates{ % plot 1 data set
+			(100,100)
+		}; \label{training stage 0}
+		\addplot[only marks, mark=o]
+		coordinates{ % plot 1 data set
+			(3,100)
+		}; \label{training stage 1}
+		\addplot[only marks, mark=+]
+		coordinates{ % plot 1 data set
+			(0.1,100)
+		}; \label{training stage 2}
 
-\begin{axis}[
-    xmode=log,
-xlabel=$FPR$ in \%,
-ylabel=$TPR$ in \%,
-]
-\addplot[only marks, mark=x]
-coordinates{ % plot 1 data set
-	(100,100)
-	% more points...
-}; \label{training stage 0}
-\addplot[only marks, mark=o]
-coordinates{ % plot 1 data set
-	(3,100)
-	% more points...
-}; \label{training stage 1}
-\addplot[only marks, mark=+]
-coordinates{ % plot 1 data set
-	(0.1,100)
-	% more points...
-}; \label{training stage 2}
+		% plot 1 legend entry
+		\addlegendimage{/pgfplots/refstyle=plot_one}
+		\addlegendentry{Training Stage 0}
+		\addlegendentry{Training Stage 1}
+		\addlegendentry{Training Stage 2}
+		\end{axis}
 
-% plot 1 legend entry
-\addlegendimage{/pgfplots/refstyle=plot_one}
-\addlegendentry{Training Stage 0}
-\addlegendentry{Training Stage 1}
-\addlegendentry{Training Stage 2}
-\end{axis}
-
-\end{tikzpicture}
+	\end{tikzpicture}
 \end{center}
 
 As training progresses from stage 0 to 2 we see that the \textit{true positive rate} (TPR) appears to remain constant. This is due to being parametrised with a minimum hit rate of 0.999, essentially ensuring that all dartboards are detected while the algorithm attempts to reduce the number of false positives. We can see that \textit{false positive rate} decreases at an exponential rate between each of the training stages.
@@ -149,25 +144,25 @@ As training progresses from stage 0 to 2 we see that the \textit{true positive r
 
 \begin{figure}[ht!]
 	\centering
-	\includegraphics[width=60mm]{img/Viola_Jones_Darts/detected_dart1.jpg}
+	\includegraphics[width=50mm]{img/Viola_Jones_Darts/detected_dart1.jpg}
 	\caption{Image dart1.jpg \label{img_dart_1}}
 \end{figure}
 
 \begin{figure}[ht!]
 	\centering
-	\includegraphics[width=60mm]{img/Viola_Jones_Darts/detected_dart2.jpg}
+	\includegraphics[width=50mm]{img/Viola_Jones_Darts/detected_dart2.jpg}
 	\caption{Image dart2.jpg \label{img_dart_2}}
 \end{figure}
 
 \begin{figure}[ht!]
 	\centering
-	\includegraphics[width=60mm]{img/Viola_Jones_Darts/detected_dart5.jpg}
+	\includegraphics[width=50mm]{img/Viola_Jones_Darts/detected_dart5.jpg}
 	\caption{Image dart5.jpg \label{img_dart_5}}
 \end{figure}
 
 \begin{figure}[ht!]
 	\centering
-	\includegraphics[width=60mm]{img/Viola_Jones_Darts/detected_dart10.jpg}
+	\includegraphics[width=50mm]{img/Viola_Jones_Darts/detected_dart10.jpg}
 	\caption{Image dart10.jpg \label{img_dart_10}}
 \end{figure}
 
@@ -196,7 +191,6 @@ As training progresses from stage 0 to 2 we see that the \textit{true positive r
 \end{center}
 
 TODO: DISCUSSION OF PERFORMANCE ACHIEVED
-
 \newpage
 
 \section{Subtask 3}
@@ -205,38 +199,20 @@ TODO: DISCUSSION OF PERFORMANCE ACHIEVED
 
 \begin{figure}[ht!]
 	\centering
-	\includegraphics[width=60mm]{img/Hough_Space_and_Threshold/houghspace.jpg}
-	\caption{Hough Space for image dart13.jpg \label{img_dart_1}}
+	\includegraphics[width=90mm]{img/Task3_Images/houghspace_dart.jpg}
+	\caption{Hough Space for images dart10.jpg and dart13.jpg}
 \end{figure}
 
 \begin{figure}[ht!]
 	\centering
-	\includegraphics[width=60mm]{img/Hough_Space_and_Threshold/threshold.jpg}
-	\caption{Thresholded Gradient Magnitude for image dart13.jpg \label{img_dart_1}}
+	\includegraphics[width=90mm]{img/Task3_Images/threshold_dart.jpg}
+	\caption{Thresholded Gradient Magnitude for images dart10.jpg and dart13.jpg}
 \end{figure}
 
 \begin{figure}[ht!]
 	\centering
-	\includegraphics[width=60mm]{img/Hough_Space_and_Threshold/houghspace2.jpg}
-	\caption{Hough Space for image dart10.jpg \label{img_dart_1}}
-\end{figure}
-
-\begin{figure}[ht!]
-	\centering
-	\includegraphics[width=60mm]{img/Hough_Space_and_Threshold/threshold2.jpg}
-	\caption{Thresholded Gradient Magnitude for image dart10.jpg \label{img_dart_1}}
-\end{figure}
-
-\begin{figure}[ht!]
-	\centering
-	\includegraphics[width=60mm]{img/Task3_Images/detected_dart13.jpg}
-	\caption{Final Detections for image dart13.jpg \label{img_dart_1}}
-\end{figure}
-
-\begin{figure}[ht!]
-	\centering
-	\includegraphics[width=60mm]{img/Task3_Images/detected_dart10.jpg}
-	\caption{Final Detections for image dart10.jpg \label{img_dart_1}}
+	\includegraphics[width=90mm]{img/Task3_Images/detected_dart.jpg}
+	\caption{Final Detections for images dart10.jpg and dart13.jpg}
 \end{figure}
 
 \subsection{Evaluation of Detector}
@@ -274,10 +250,7 @@ TODO: DISCUSSION OF PERFORMANCE ACHIEVED
 
 \subsection{Evidence of Combined Hough Transform and Viola-Jones}
 
-\tikzstyle{decision} = [diamond, draw, fill=blue!20, 
-text width=4.5em, text badly centered, node distance=3cm, inner sep=0pt]
-\tikzstyle{block} = [rectangle, draw, fill=blue!20, 
-text width=5em, text centered, rounded corners, minimum height=4em]
+\tikzstyle{block} = [rectangle, draw, fill=blue!20, text width=5em, text centered, rounded corners, minimum height=4em]
 \tikzstyle{line} = [draw, -latex']
 \tikzstyle{cloud} = [draw, ellipse,fill=red!20, node distance=3cm,
 minimum height=2em]
@@ -287,11 +260,11 @@ minimum height=2em]
 	    \node [cloud, left of=ViolaJones] (Train) {Training Data};
 	    \node [cloud, right of=ViolaJones] (Input) {Input Image};
 	    \node [block, below of=ViolaJones] (Model) {Combined Model};
-        \node [block, right of=Model] (Hough) {Hough Circle Detector};
+        \node [block, below of=Input] (Hough) {Hough Circle Detector};
         \node [cloud, below of=Model] (Output) {Detected Dart Boards};
         \path [line] (ViolaJones) -- (Model);
-        \path [line] (Model) -- (Output);
         \path [line] (Hough) -- (Model);
+        \path [line,dashed] (Model) -- (Output);
         \path [line,dashed] (Train) -- (ViolaJones);
         \path [line,dashed] (Input) -- (ViolaJones);
         \path [line,dashed] (Input) -- (Hough);
@@ -343,7 +316,23 @@ implementation.
 	\item Adding this detection of potential dartboard centres to the combined model can be done in a similar way to the addition of the circle detector.
 \end{itemize}
 
+TODO: Add option of implementing the hough transform with gradient direction to increase performance of program and decrease runtime
+
 \subsection{Images showing aspects of the final technique}
+
+\begin{figure}[ht!]
+	\centering
+	\includegraphics[width=60mm]{img/Task4_Images/detected_dart7_unmerged.jpg}
+	\caption{The detected dartboards for image dart7.jpg without merging of overlapping dartboards.}
+\end{figure}
+
+\begin{figure}[ht!]
+	\centering
+	\includegraphics[width=60mm]{img/Task4_Images/detected_dart7_merged.jpg}
+	\caption{The detected dartboards for image dart7.jpg with merging of overlapping dartboards.}
+\end{figure}
+
+TODO: Add comments.
 
 \subsection{Final F1-Scores}
 \begin{center}
@@ -369,5 +358,7 @@ implementation.
 		average & 83.33\% & 81.25\% & 87.5\% \\ \hline
 	\end{tabular}
 \end{center}
+
+TODO: Explain table!
 
 \end{document}
