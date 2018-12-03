@@ -35,7 +35,7 @@ int main(int argc, char** argv) {
     double duration;
     start = clock();
 
-    cout << "[STATUS]: Hello Circle Detector" << endl;
+    cout << "[STATUS]: Hello Dartboard Detector" << endl;
 
     // parse arguments to detect viewing mode
     bool viewmode;
@@ -100,13 +100,13 @@ int main(int argc, char** argv) {
 
     // merge overlapping dartboards together
     dartboards =  mergeDartboards(dartboards);
-    
+
     // draw dartboards on the image
     cout << "[STATUS]: Start drawing dartboards on the image...!" << endl;
     Mat image2 = image.clone();
     drawDartboards(dartboards, image);
     drawDebugDartboards(dartboards2, circles, image2);
-    cout << "[STATUS]: Finished drawing dartboards!" << endl;    
+    cout << "[STATUS]: Finished drawing dartboards!" << endl;
 
 	// Save Result Image
 	string prefix = "output_images/detected_";
@@ -120,7 +120,7 @@ int main(int argc, char** argv) {
 
     // end the time for benchmarking
     duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
-    
+
     if(viewmode){
         // show the detected dartboards in the end
         imshow("Detected dartboards", image);
@@ -131,7 +131,7 @@ int main(int argc, char** argv) {
         waitKey(0);
     }
 
-    cout << "[STATUS]: Dartboard detection finished! Duration was " << duration << "s."<< endl; 
+    cout << "[STATUS]: Dartboard detection finished! Duration was " << duration << "s."<< endl;
     return 0;
 }
 
@@ -144,7 +144,7 @@ std::vector<Rect> detectDartboards( Mat frame )
 	cvtColor( frame, frame_gray, CV_BGR2GRAY );
 	equalizeHist( frame_gray, frame_gray );
 
-	// 2. Perform Viola-Jones Object Detection 
+	// 2. Perform Viola-Jones Object Detection
 	cascade.detectMultiScale( frame_gray, dartboards, 1.1, 1, 0|CV_HAAR_SCALE_IMAGE, Size(50, 50), Size(500,500) );
 
     std::cout << "[INFO]: Found " << dartboards.size() << " dartboards in the image." << std::endl;
@@ -153,7 +153,7 @@ std::vector<Rect> detectDartboards( Mat frame )
 }
 
 bool rectContainsPoint(Rect db, Point p){
-    bool a1 = db.x < p.x; 
+    bool a1 = db.x < p.x;
     bool a2 = (db.x + db.width) > p.x;
     bool a3 = db.y < p.y;
     bool a4 = (db.y + db.height) > p.y;
@@ -177,10 +177,10 @@ std::vector<cv::Rect> selectDartboards(std::vector<cv::Rect> dartboards, std::ve
          *      c
          *   _ _ _
          *  |     |
-         * a|  .  | b 
+         * a|  .  | b
          *  |_ _ _|
          *      d
-         * 
+         *
          **/
 		bool detected = false;
         for(int j = 0; j < circles.size(); j++){
@@ -242,9 +242,9 @@ std::vector<cv::Rect> mergeDartboards(std::vector<cv::Rect> dartboards){
                 Rect r;
                 int minX = dartboards[k].x < dartboards[i].x ? dartboards[k].x : dartboards[i].x;
                 int minY = dartboards[k].y < dartboards[i].y ? dartboards[k].y : dartboards[i].y;
-                int maxX = (dartboards[k].x + dartboards[k].width) > (dartboards[i].x + dartboards[i].width) ? (dartboards[k].x + dartboards[k].width) : (dartboards[i].x + dartboards[i].width) ; 
+                int maxX = (dartboards[k].x + dartboards[k].width) > (dartboards[i].x + dartboards[i].width) ? (dartboards[k].x + dartboards[k].width) : (dartboards[i].x + dartboards[i].width) ;
                 int maxY = (dartboards[k].y + dartboards[k].height) > (dartboards[i].y + dartboards[i].height) ? (dartboards[k].y + dartboards[k].height) : (dartboards[i].y + dartboards[i].height) ;
-                
+
                 r = Rect(minX, minY, maxX-minX, maxY-minY);
                 // check if a rectangle with the same dimensions is already part of newDartboards
                 bool alreadyContains = false;
@@ -253,7 +253,7 @@ std::vector<cv::Rect> mergeDartboards(std::vector<cv::Rect> dartboards){
                         alreadyContains = true;
                         break;
                     }
-                    
+
                 }
 
                 // if this is a new rectangle add it to newDartboards vector
@@ -275,7 +275,7 @@ std::vector<cv::Rect> mergeDartboards(std::vector<cv::Rect> dartboards){
                     alreadyContains = true;
                     break;
                 }
-                
+
             }
             // if this is a new rectangle add it to newDartboards vector
             if(!alreadyContains){

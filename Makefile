@@ -28,10 +28,10 @@ trainmodel: dart.vec
 .PHONY: clean all
 
 clean:
-	\rm dartboard
-	\rm houghlines
-	\rm dart.vec
-	\rm face
-	\rm -r dartcascade/*
-	\rm -r output_images/*
-	\rm -r workdir/*
+	\rm -f dartboard
+	\rm -f houghlines
+	\rm -f dart.vec
+	\rm -f face
+	\rm -rf dartcascade/*
+	\rm -rf output_images/*
+	\rm -rf workdir/*
