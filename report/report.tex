@@ -89,7 +89,7 @@ dart15.jpg TPR =
 \[\frac{2}{2+1} = 0.\dot{6} \therefore 66.\dot{6}\%\]
 
 
-The TPR is independent of the false positive rate. Consider a face detection task where we have $x$ faces to detect $(A = \{face_{1} \ldots face_{x}\}$ and a hypothetical model that produces a set of detected faces $B$ comprised of all y possible contiguous combinations of pixel areas. $A \subset B$, however it also contains $y-x$ false positive detections. In this case the model has a TPR of 100\%, however a potentially much lower precision. This hypothetical model is always possible, regardless of input, therefore a TPR of 100\% is always possible.
+The TPR is independent of the false positive rate. Consider a face detection task where we have $x$ faces to detect $(A = \{face_{1} \ldots face_{x}\}$ and a hypothetical model that produces a set of detected faces $B$ comprised of all $y$ possible contiguous combinations of pixel areas. $A \subset B$, however it also contains $y-x$ false positive detections. In this case the model has a TPR of 100\%, however a potentially much lower precision. This hypothetical model is always possible, regardless of input, therefore a TPR of 100\% is always possible.
 
 
 
@@ -191,7 +191,9 @@ As training progresses from stage 0 to 2 we see that the \textit{true positive r
 	\end{tabular}
 \end{center}
 
-TODO: DISCUSSION OF PERFORMANCE ACHIEVED
+In the table above the F1-Scores for Viola-Jones model trained on dartboards have been calculated. This model produces a reasonable true positive rate, managing to detect dartboards in the majority of test images. The model however also has a tendency to produce many false positives resulting in a decrease in F1-Scores for certain test cases. The model struggles with some partly obscured dartboards as well as identifying a single dartboard multiple times.
+
+
 \newpage
 
 \section{Subtask 3}
@@ -202,6 +204,7 @@ TODO: DISCUSSION OF PERFORMANCE ACHIEVED
 	\centering
 	\includegraphics[width=90mm]{img/Task3_Images/threshold_dart.jpg}
 	\caption{Thresholded Gradient Magnitude for images dart10.jpg and dart13.jpg}
+	\label{ThresholdGM}
 \end{figure}
 
 
@@ -246,7 +249,7 @@ TODO: DISCUSSION OF PERFORMANCE ACHIEVED
 \begin{itemize}
 	\item[+] False positive rate strongly decreases due to a requirement of a positive from both \textbf{Viola-Jones}, and \textbf{Hough Circle Detection}
 	\item[+] There is an improvement of 16 percentage points over regular Viola-Jones (A \texttildelow 25\% improvement).
-	\item[-] A small number of false negatives was introduced (Viola-Jones produced 0 false negatives)
+	\item[-] A small number of false negatives was introduced (Viola-Jones produced close to no false negatives, dependent on the trained model)
 	\item[-] Like Viola-Jones, overlapping detection rectangles result in an increase in the false positive rate.
 \end{itemize}
 
@@ -276,8 +279,10 @@ minimum height=2em]
 \begin{itemize}
 	\item Viola-Jones is first trained using the training data as input.
 	\item Viola-Jones receives an test image as input and returns detected dart boards.
-	\item The Hough Circle Detector receives the same input image and returns detected circles.
-	\item All detected dart boards are cross referenced against the Hough Detector's circles.
+	\item The Hough Circle Detector receives the same input image after pre-processing.
+	\item This pre-processing produces a gradient magnitude image which is then thresholded to generate a black and white image on which the Hough space is calculated.
+	\item In order to reduce memory usage rather than using a three dimensional Hough space, for each radius size a Hough space is calculated, circles are detected, and the resulting Hough space is added to a two dimensional accumulated Hough space. 
+	\item All detected dart boards are cross referenced against the Hough detector's circles.
 	\item If a Viola-Jones detected board contains no circle it is disregarded as a false positive.
 	\item Conversely, if the board contains one or more circles the Viola-Jones prediction is considered to have been confirmed.
 	\item The decision to confirm Viola-Jones using detected Hough circles and not vice versa is due to the following: 
@@ -293,18 +298,19 @@ minimum height=2em]
 \subsection{Rationale}
 \begin{itemize}
 	\item In order to avoid false positives produced by dartboards being detected multiple times with Viola-Jones overlapping boards have been consolidated into one.
-	\item This works due to the assumption that boards would not be expected to overlap or lie within the edge of another in reality due to their positioning being mounted typically on solid walls, and being of fixed size.
+	\item This works because of the assumption that boards would not be expected to overlap or lie within the edge of another in reality due to their positioning: being mounted typically on solid walls, and being of fixed size.
 \end{itemize}
 
 \textbf{Future Improvements}
+The following improvements have been partially implemented and included in the submitted code, however are not in use for the final model.
 \begin{itemize}
-	\item Add an implementation of a Hough Lines detector detecting line intersections. 
+	\item Add an implementation of a Hough lines detector detecting line intersections. 
 	\item Any point at or near which multiple lines intersect is potentially the centre of a dart board.
 	\item The efficacy of this method is largely independent of the angle at which the dartboard is viewed.
-	\item Adding this detection of potential dartboard centres to the combined model can be done in a similar way to the addition of the circle detector.
+	\item Adding this detection of potential dartboard centres to the combined model can be done in a similar way to the addition of the circle detector, due to how the combined model is constructed.
 \end{itemize}
 
-In our given implementation of the Hough Circles algorithm we are using as input a thresholded gradient magnitude image--an example of which can be seen in figure 13. This has allowed for a model that runs in a reasonable time-frame for each given image (a matter of seconds). However, in the case that the input images are much larger in size this method may become infeasible. An optimisation that has the potential to greatly reduce runtime while still producing sufficiently accurate output is to include gradient direction in the Hough Transform.
+In our given implementation of the Hough circles algorithm we are using as input a thresholded gradient magnitude image--an example of which can be seen in \cref{ThresholdGM}. This has allowed for a model that runs in a reasonable time-frame for each given image (a matter of seconds). However, in the case that the input images are much larger in size this method may become infeasible. An optimisation that has the potential to greatly reduce runtime while still producing sufficiently accurate output is to include gradient direction in the Hough Transform.
 
 \subsection{Images showing aspects of the final technique}
 
@@ -354,9 +360,9 @@ As we can see in \cref{Unmerged VJ-Hough}, our unoptimised model, there are thre
 \begin{itemize}
 	\item Our final model overall shows better performance than any of the previous models. 
 	
-	\item When compared to the naive combination model of Viola-Jones and Hough Circles we have achieved an identical Recall, but a significantly higher F1-Score and Precision.
+	\item When compared to the naive combination model of Viola-Jones and Hough circles we have achieved an identical Recall, but a significantly higher F1-Score and Precision.
 	
-	\item This by extension means that it outperforms both Viola-Jones, and Hough Circles independently. 
+	\item This by extension means that it outperforms both Viola-Jones, and Hough circles independently. 
 	
 	\item It should be noted that the efficacy of the model can vary due to the robustness of the trained Viola-Jones model.
 	
