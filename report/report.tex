@@ -9,6 +9,7 @@
 \usepackage{textcomp}
 \usepackage{xcolor}
 \usepackage{tikz}
+\usepackage[english]{cleveref}
 
 \usetikzlibrary{shapes,arrows}
 
@@ -199,14 +200,15 @@ TODO: DISCUSSION OF PERFORMANCE ACHIEVED
 
 \begin{figure}[ht!]
 	\centering
-	\includegraphics[width=90mm]{img/Task3_Images/houghspace_dart.jpg}
-	\caption{Hough Space for images dart10.jpg and dart13.jpg}
+	\includegraphics[width=90mm]{img/Task3_Images/threshold_dart.jpg}
+	\caption{Thresholded Gradient Magnitude for images dart10.jpg and dart13.jpg}
 \end{figure}
+
 
 \begin{figure}[ht!]
 	\centering
-	\includegraphics[width=90mm]{img/Task3_Images/threshold_dart.jpg}
-	\caption{Thresholded Gradient Magnitude for images dart10.jpg and dart13.jpg}
+	\includegraphics[width=90mm]{img/Task3_Images/houghspace_dart.jpg}
+	\caption{Hough Space for images dart10.jpg and dart13.jpg}
 \end{figure}
 
 \begin{figure}[ht!]
@@ -288,20 +290,6 @@ minimum height=2em]
 \newpage
 \section{Subtask 4}
 
-
-
-The Forth Page of your Report (strict limit):\\
-a) In bullet points, explain briefly your rationale behind
-selecting the approach you have taken.\\
-b) Visualize important aspects of your technique in two of
-the given example dart images selected to best exhibit the
-merit of your approach.\\
-c) Evaluate your final detector on all of the example images,
-show the improvements in F1-score. Document your
-overall detection results and briefly note in bullet points
-the key merits and shortcomings of your final
-implementation.
-
 \subsection{Rationale}
 \begin{itemize}
 	\item In order to avoid false positives produced by dartboards being detected multiple times with Viola-Jones overlapping boards have been consolidated into one.
@@ -316,23 +304,26 @@ implementation.
 	\item Adding this detection of potential dartboard centres to the combined model can be done in a similar way to the addition of the circle detector.
 \end{itemize}
 
-TODO: Add option of implementing the hough transform with gradient direction to increase performance of program and decrease runtime
+In our given implementation of the Hough Circles algorithm we are using as input a thresholded gradient magnitude image--an example of which can be seen in figure 13. This has allowed for a model that runs in a reasonable time-frame for each given image (a matter of seconds). However, in the case that the input images are much larger in size this method may become infeasible. An optimisation that has the potential to greatly reduce runtime while still producing sufficiently accurate output is to include gradient direction in the Hough Transform.
 
 \subsection{Images showing aspects of the final technique}
 
 \begin{figure}[ht!]
 	\centering
-	\includegraphics[width=60mm]{img/Task4_Images/detected_dart7_unmerged.jpg}
+	\includegraphics[width=45mm]{img/Task4_Images/detected_dart7_unmerged.jpg}
 	\caption{The detected dartboards for image dart7.jpg without merging of overlapping dartboards.}
+	\label{Unmerged VJ-Hough}
 \end{figure}
 
 \begin{figure}[ht!]
 	\centering
-	\includegraphics[width=60mm]{img/Task4_Images/detected_dart7_merged.jpg}
+	\includegraphics[width=45mm]{img/Task4_Images/detected_dart7_merged.jpg}
 	\caption{The detected dartboards for image dart7.jpg with merging of overlapping dartboards.}
+	\label{Merged VJ-Hough}
 \end{figure}
 
-TODO: Add comments.
+As we can see in \cref{Unmerged VJ-Hough}, our unoptimised model, there are three bounding rectangles representing recognised dart boards. This model shows zero false negatives, however 2/3 of the recognitions are superfluous. By combining these overlapping boxes, assuming that in reality overlapping boxes represent multiple instances of the same dart board predicted we can refine the model to produce only one bounding box as shown in \cref{Merged VJ-Hough}, thus improving the output of the model.
+
 
 \subsection{Final F1-Scores}
 \begin{center}
@@ -359,6 +350,20 @@ TODO: Add comments.
 	\end{tabular}
 \end{center}
 
-TODO: Explain table!
+\subsection{Final Comments}
+\begin{itemize}
+	\item Our final model overall shows better performance than any of the previous models. 
+	
+	\item When compared to the naive combination model of Viola-Jones and Hough Circles we have achieved an identical Recall, but a significantly higher F1-Score and Precision.
+	
+	\item This by extension means that it outperforms both Viola-Jones, and Hough Circles independently. 
+	
+	\item It should be noted that the efficacy of the model can vary due to the robustness of the trained Viola-Jones model.
+	
+	\item Because of this there tends to be some trade-off between correctly detecting difficult boards(i.e. where the image shows a large amount of noise, or where the board is partly obscured) and producing false positives. Some examples of this are boards three and eleven which in the model we evaluated were entirely undetected.
+	
+\end{itemize}
+
+Our final implementation was able to achieve 100\% F1-Score, Recall, and Precision on twelve out of the sixteen test images, representing a considerably accurate trained model.
 
 \end{document}
